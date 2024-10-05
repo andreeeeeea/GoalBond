@@ -1,14 +1,20 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
-from models import db, User, Goal
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from models import db, User, Goal
+from flask_cors import CORS
+
+import os
+
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+cors = CORS()
 
+cors.init_app(app, resources={r"/*": {"origins": "*"}})
 db.init_app(app)
 
 # Initialize the database
@@ -19,6 +25,7 @@ with app.app_context():
 @app.route('/users', methods=['POST'])
 def create_user():
     data = request.get_json()
+    print(data)
     username = data.get('username')
     email = data.get('email')
 
