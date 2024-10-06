@@ -3,10 +3,14 @@ import App from './App.vue';
 import router from './router'; 
 import './assets/output.css'; 
 import store from './store';  // Import the store
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 const app = createApp(App);
 
-app.use(router); // Use the router
-app.use(store);  // Use the Vuex store
-
-app.mount('#app'); 
+// Check authentication status before mounting the app
+store.dispatch('checkAuth').then(() => {
+  app.use(store).use(router).mount('#app')
+});

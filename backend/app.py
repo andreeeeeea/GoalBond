@@ -17,9 +17,14 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SECRET_KEY'] = 'BellaEOpisicaGrasa2000'  # Change this to a strong secret key
 
-# Enable CORS
-cors = CORS()
-cors.init_app(app, resources={r"/*": {"origins": "*"}})
+# Update CORS configuration to allow specific methods without preflight
+CORS(app, resources={r"/*": {
+    "origins": "*", 
+    "methods": ["GET", "POST", "PUT", "DELETE"],
+    "allow_headers": ["Content-Type", "Authorization"],
+    "supports_credentials": True
+}})
+
 db.init_app(app)
 
 # Initialize Flask-Login
@@ -61,15 +66,40 @@ def signup():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
+    print("Received login data:", data)  # For debugging, remove in production
     username = data.get('username')
     password = data.get('password')
 
+    if not username or not password:
+        return jsonify({"message": "Missing username or password"}), 400
+
     user = User.query.filter_by(username=username).first()
-    if user and check_password_hash(user.password, password):  # Adjust based on how you hash passwords
+    if user and check_password_hash(user.password, password):
         login_user(user)
-        return jsonify({"message": "Login successful"}), 200
+        return jsonify({
+            "message": "Login successful",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email
+            }
+        }), 200
     return jsonify({"message": "Invalid username or password"}), 401
 
+# Add a new route to check authentication status
+@app.route('/check-auth', methods=['GET'])
+def check_auth():
+    if current_user.is_authenticated:
+        return jsonify({
+            "authenticated": True,
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+                "email": current_user.email
+            }
+        }), 200
+    else:
+        return jsonify({"authenticated": False}), 401
 
 # User Logout
 @app.route('/logout', methods=['POST'])
@@ -84,13 +114,13 @@ def create_goal():
     data = request.get_json()
     title = data.get('title')
     description = data.get('description')
-    user_id = data.get('user_id')  # User ID to associate the goal with a user
+    user_id = current_user.id  # User ID to associate the goal with a user
 
     if not title or not user_id:
         return jsonify({'message': 'Missing title or user_id'}), 400
 
     # Check if the user exists
-    user = User.query.get(user_id)
+    user = current_user.id
     if user is None:
         return jsonify({'message': 'User not found'}), 404
 
@@ -104,7 +134,7 @@ def create_goal():
 # Get all Goals
 @app.route('/goals', methods=['GET'])
 def get_goals():
-    user_id = request.args.get('user_id')  # Optional user ID to filter goals by user
+    user_id = current_user.id  # Optional user ID to filter goals by user
 
     if user_id:
         # Filter goals by user

@@ -12,7 +12,6 @@
   
   <script>
   import { mapActions } from 'vuex';
-  import axios from 'axios';
   
   export default {
     data() {
@@ -26,16 +25,8 @@
       ...mapActions(['login']),
       async handleLogin() {
         try {
-          // Ignore response data
-          await axios.post('http://localhost:5000/login', {
-            username: this.username,
-            password: this.password,
-          });
-          
-          // Assuming the user object structure based on successful login
-          const userData = { username: this.username }; // Use username for simplicity
-          this.login(userData); // Commit user data to Vuex
-          this.$router.push('/'); // Redirect to home
+          await this.login({ username: this.username, password: this.password });
+          this.$router.push('/'); // Redirect to home on successful login
         } catch (error) {
           this.errorMessage = 'Invalid username or password';
         }
@@ -48,4 +39,3 @@
   <style scoped>
   /* Add your styles here if needed */
   </style>
-  

@@ -24,12 +24,11 @@ export default {
     const router = useRouter(); 
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
-    const username = computed(() => store.getters.getUsername || ''); // Ensure username is a string
+    const username = computed(() => store.getters.getUsername || '');
 
-    const logout = () => {
-      store.dispatch('logout');
-      // Optionally, call your backend logout endpoint
-      // fetch('http://localhost:5000/logout', { method: 'POST' });
+    const logout = async () => {
+      await store.dispatch('logout');
+      router.push('/login');
     };
 
     const goToLogin = () => {

@@ -1,49 +1,55 @@
 import { createStore } from 'vuex';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = 'http://localhost:5000'; // Set the base URL for all requests
 
 export default createStore({
   state: {
-    isAuthenticated: false, // Set initial authentication state
-    user: null, // Add user data state
+    user: null,
+    isAuthenticated: false
   },
   mutations: {
-    SET_AUTH(state, user) {
-      state.isAuthenticated = true; // Set to true on login
-      state.user = user; // Store user info
-    },
-    logout(state) {
-      state.isAuthenticated = false; // Set to false on logout
-      state.user = null; // Clear user info
-    },
-    SET_USER_FROM_STORAGE(state, user) {
-      state.isAuthenticated = true;
-      state.user = user;
-    },
+    SET_USER(state, user) {
+      state.user = user
+      state.isAuthenticated = !!user
+    }
   },
   actions: {
-    login({ commit }, user) {
-      commit('SET_AUTH', user); // Commit mutation with user info
-      localStorage.setItem('user', JSON.stringify(user)); // Save user data in localStorage
-    },
-    logout({ commit }) {
-      commit('logout'); // Just commit the logout mutation
-      localStorage.removeItem('user'); // Clear user info from local storage
-    },
-    setUserFromStorage({ commit }) {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user) {
-        commit('SET_USER_FROM_STORAGE', user); // Set user data from localStorage
+    async login({ commit }, credentials) {
+      try {
+        const response = await axios.post('/login', credentials);
+        commit('SET_USER', response.data.user);
+        return response;
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
       }
     },
+    async logout({ commit }) {
+      try {
+        await axios.post('http://localhost:5000/logout')
+        commit('SET_USER', null)
+      } catch (error) {
+        console.error('Logout error:', error)
+      }
+    },
+    async checkAuth({ commit }) {
+      try {
+        const response = await axios.get('http://localhost:5000/check-auth')
+        if (response.data.authenticated) {
+          commit('SET_USER', response.data.user)
+        } else {
+          commit('SET_USER', null)
+        }
+      } catch (error) {
+        console.error('Check auth error:', error)
+        commit('SET_USER', null)
+      }
+    }
   },
   getters: {
-    isAuthenticated(state) {
-      return state.isAuthenticated; // Getter for authentication state
-    },
-    getUser(state) {
-      return state.user; // Getter for user info
-    },
-    getUsername(state) {
-      return state.user ? state.user.username : ''; // Getter for user's username
-    },
-  },
+    isAuthenticated: state => state.isAuthenticated,
+    getUsername: state => state.user ? state.user.username : ''
+  }
 });
