@@ -1,23 +1,22 @@
 <template>
-  <div id="app">
-    <h1>Goal Tracker</h1>
-    <UserForm />
-    <GoalForm />
+  <div id="app" class="min-h-screen bg-gray-100 flex flex-col">
+    <Navbar />
+    <main class="flex-grow p-4">
+      <router-view /> <!-- This is where the matched component will be rendered -->
+    </main>
   </div>
 </template>
 
 <script>
-import UserForm from './components/UserForm.vue';
-import GoalForm from './components/GoalForm.vue';
-
+import Navbar from './components/NavBar.vue';
 export default {
+  name: 'App',
   components: {
-    UserForm,
-    GoalForm
+    Navbar,
   }
 };
 </script>
 
 <style>
-/* Add your styles here */
+/* Global styles can go here */
 </style>
