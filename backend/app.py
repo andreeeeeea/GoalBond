@@ -163,7 +163,7 @@ def update_goal(goal_id):
     goal = Goal.query.get_or_404(goal_id)  # Get the goal or return 404 if not found
 
     # Check if the user is part of the group that shares the goal
-    if goal.group_id is not None and current_user not in goal.group.members:
+    if goal.group_id and current_user not in goal.group.members:
         return jsonify({'message': 'You are not authorized to update this goal.'}), 403
 
     data = request.get_json()
@@ -244,6 +244,21 @@ def get_groups():
         'description': group.description,
         'members': [{'id': user.id, 'username': user.username} for user in group.members]  # Include members
     } for group in groups]), 200
+    
+# Get user's group   
+@app.route('/groups/mine', methods=['GET'])
+@login_required
+def get_user_groups():
+    # Fetch groups where the user is a member
+    groups = current_user.groups  # This uses the relationship defined in the User model
+
+    return jsonify([{
+        'id': group.id,
+        'name': group.name,
+        'description': group.description,
+        'members': [{'id': member.id, 'username': member.username} for member in group.members]
+    } for group in groups]), 200
+
 
 # Join a Group
 @app.route('/groups/<int:group_id>/join', methods=['POST'])

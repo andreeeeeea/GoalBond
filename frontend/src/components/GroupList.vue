@@ -9,9 +9,7 @@
           <!-- Display members of the group -->
           <h4 class="font-semibold mt-2">Members:</h4>
           <ul v-if="group.members && group.members.length > 0">
-            <li v-for="member in group.members" :key="member.id">
-              {{ member.username }} <!-- Assuming member has a username -->
-            </li>
+            <span v-for="(member, index) in group.members" :key="member.id">{{ member.username }}{{ index === group.members.length - 1 ? '.' : ', ' }}</span>
           </ul>
           <p v-else>No members yet.</p>
   

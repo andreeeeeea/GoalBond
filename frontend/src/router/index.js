@@ -6,6 +6,7 @@ import GoalForm from '../components/GoalForm.vue';
 import GoalsList from '@/components/GoalsList.vue';
 import GroupForm from '@/components/GroupForm.vue';
 import GroupList from '@/components/GroupList.vue';
+import GroupView from '@/components/GroupView.vue';
 
 const routes = [
   {
@@ -45,6 +46,12 @@ const routes = [
     path: '/join-group',
     name: 'join-group',
     component: GroupList,
+    meta: { requiresAuth: true }, // Protect this route
+  },
+  {
+    path: '/groups',
+    name: 'groups',
+    component: GroupView,
     meta: { requiresAuth: true }, // Protect this route
   }
 ];

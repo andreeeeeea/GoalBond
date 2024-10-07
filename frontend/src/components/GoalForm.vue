@@ -41,7 +41,7 @@
         </div>
         <div v-if="hasDeadline" class="mb-4">
           <label for="deadline">Deadline:</label>
-          <input type="datetime-local" id="deadline" v-model="deadline" required />
+          <input type="date" id="deadline" v-model="deadline" required />
         </div>
         <button
           type="submit"

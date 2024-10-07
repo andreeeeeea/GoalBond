@@ -13,6 +13,7 @@
       <button v-if="isAuthenticated" @click="goToGoals" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">My Goals</button>
       <button v-if="isAuthenticated" @click="createGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Create Group</button>
       <button v-if="isAuthenticated" @click="joinGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Join Group</button>
+      <button v-if="isAuthenticated" @click="goToGroups" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Groups</button>
     </div>
   </nav>
 </template>
@@ -29,7 +30,6 @@ export default {
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const username = computed(() => store.getters.getUsername || '');
-
 
     const logout = async () => {
       await store.dispatch('logout');
@@ -60,6 +60,10 @@ export default {
       router.push('/join-group');
     };
 
+    const goToGroups = () => {
+      router.push('/groups');
+    };
+
     return {
       isAuthenticated,
       username,
@@ -70,6 +74,7 @@ export default {
       goToGoals,
       createGroup,
       joinGroup,
+      goToGroups,
     };
   },
 };
