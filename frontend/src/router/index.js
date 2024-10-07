@@ -3,6 +3,7 @@ import HomeView from '../components/HomeView.vue';
 import LoginView from '../components/LoginForm.vue';
 import SignupView from '../components/SignUpForm.vue';
 import GoalForm from '../components/GoalForm.vue';
+import GoalsList from '@/components/GoalsList.vue';
 
 const routes = [
   {
@@ -21,11 +22,17 @@ const routes = [
     component: SignupView,
   },
   {
-    path: '/goals',
-    name: 'goals',
+    path: '/add-goal',
+    name: 'add-goal',
     component: GoalForm,
     meta: { requiresAuth: true }, // Protect this route
   },
+  {
+    path: '/goals',
+    name: 'goals',
+    component: GoalsList,
+    meta: { requiresAuth: true }, // Protect this route
+  }
 ];
 
 const router = createRouter({

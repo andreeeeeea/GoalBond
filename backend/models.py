@@ -23,11 +23,25 @@ class Goal(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    deadline = db.Column(db.DateTime, nullable=True)
+    completed = db.Column(db.Boolean, default=False)
 
     def to_dict(self):
         return {
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,  # Convert to ISO format
+            'deadline': self.deadline.isoformat() if self.deadline else None,        # Convert to ISO format
+            'completed': self.completed,
+            'has_deadline': self.deadline is not None  # Check if deadline is set
         }
+    
+    
+    
+
+
+
+

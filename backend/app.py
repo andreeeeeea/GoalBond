@@ -1,3 +1,4 @@
+import datetime
 from dotenv import load_dotenv
 import os
 
@@ -114,9 +115,10 @@ def create_goal():
     data = request.get_json()
     title = data.get('title')
     description = data.get('description')
+    deadline = data.get('deadline')
     user_id = current_user.id  # User ID to associate the goal with a user
 
-    if not title or not user_id:
+    if not title or user_id is None:
         return jsonify({'message': 'Missing title or user_id'}), 400
 
     # Check if the user exists
@@ -125,11 +127,29 @@ def create_goal():
         return jsonify({'message': 'User not found'}), 404
 
     # Create the new goal
-    new_goal = Goal(title=title, description=description, user_id=user_id)
+    new_goal = Goal(
+        title=title,
+        description=description,
+        deadline=deadline if deadline else None,  # Allow deadline to be None if not provided
+        completed=False,
+        user_id=user_id
+    )
     db.session.add(new_goal)
     db.session.commit()
 
-    return jsonify({'message': 'Goal created successfully!'}), 201
+    return jsonify({
+        'message': 'Goal created successfully!',
+        'goal': {
+            'id': new_goal.id,
+            'title': new_goal.title,
+            'description': new_goal.description,
+            'deadline': new_goal.deadline,  # This will be None if not provided
+            'created_at': new_goal.created_at,
+            'completed': new_goal.completed,
+            'user_id': new_goal.user_id,
+            'has_deadline': new_goal.deadline is not None  # Indicate if the goal has a deadline
+        }
+    }), 201
 
 # Get all Goals
 @app.route('/goals', methods=['GET'])
@@ -149,8 +169,53 @@ def get_goals():
         'id': goal.id,
         'title': goal.title,
         'description': goal.description,
+        'deadline': goal.deadline,
+        'created_at': goal.created_at,
+        'completed': goal.completed,
         'user_id': goal.user_id
     } for goal in goals]), 200
+    
+    
+# Update a Goal
+@app.route('/goals/<int:goal_id>', methods=['PUT'])
+@login_required
+def update_goal(goal_id):
+    goal = Goal.query.get_or_404(goal_id)  # Get the goal or return 404 if not found
+
+    # Only allow the owner of the goal to update it
+    if goal.user_id != current_user.id:
+        return jsonify({'message': 'You are not authorized to update this goal.'}), 403
+
+    data = request.get_json()
+    if 'completed' in data:
+        goal.completed = data['completed']  # Update the completed status
+
+    db.session.commit()  # Save changes to the database
+
+    return jsonify({'message': 'Goal updated successfully!', 'goal': {
+        'id': goal.id,
+        'title': goal.title,
+        'description': goal.description,
+        'deadline': goal.deadline,
+        'completed': goal.completed,
+        'user_id': goal.user_id
+    }}), 200
+    
+    
+# Remove a Goal
+@app.route('/goals/<int:goal_id>', methods=['DELETE'])
+@login_required
+def delete_goal(goal_id):
+    goal = Goal.query.get_or_404(goal_id)  # Get the goal or return 404 if not found
+
+    # Only allow the owner of the goal to delete it
+    if goal.user_id != current_user.id:
+        return jsonify({'message': 'You are not authorized to delete this goal.'}), 403
+
+    db.session.delete(goal)  # Delete the goal
+    db.session.commit()  # Commit the changes to the database
+
+    return jsonify({'message': 'Goal deleted successfully!'}), 200
 
 # Run the application
 if __name__ == '__main__':
