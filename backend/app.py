@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash
 from flask_cors import CORS
 
 # Import models
-from models import db, User, Goal
+from models import db, User, Goal, Group
 
 # Load environment variables
 load_dotenv()
@@ -111,11 +111,13 @@ def logout():
 
 # Create a Goal
 @app.route('/goals', methods=['POST'])
+@login_required
 def create_goal():
     data = request.get_json()
     title = data.get('title')
     description = data.get('description')
     deadline = data.get('deadline')
+    group_id = data.get('group_id')  # Get the group_id if provided
     user_id = current_user.id  # User ID to associate the goal with a user
 
     if not title or user_id is None:
@@ -132,58 +134,36 @@ def create_goal():
         description=description,
         deadline=deadline if deadline else None,  # Allow deadline to be None if not provided
         completed=False,
-        user_id=user_id
+        user_id=user_id,
+        group_id=group_id  # Associate with the group if provided
     )
     db.session.add(new_goal)
     db.session.commit()
 
     return jsonify({
         'message': 'Goal created successfully!',
-        'goal': {
-            'id': new_goal.id,
-            'title': new_goal.title,
-            'description': new_goal.description,
-            'deadline': new_goal.deadline,  # This will be None if not provided
-            'created_at': new_goal.created_at,
-            'completed': new_goal.completed,
-            'user_id': new_goal.user_id,
-            'has_deadline': new_goal.deadline is not None  # Indicate if the goal has a deadline
-        }
+        'goal': new_goal.to_dict()  # Call the updated to_dict() method
     }), 201
 
 # Get all Goals
 @app.route('/goals', methods=['GET'])
+@login_required  # Make sure this endpoint requires authentication
 def get_goals():
     user_id = current_user.id  # Optional user ID to filter goals by user
 
-    if user_id:
-        # Filter goals by user
-        goals = Goal.query.filter_by(user_id=user_id).all()
-        if not goals:
-            return jsonify({'message': 'No goals found for this user'}), 404
-    else:
-        # Retrieve all goals
-        goals = Goal.query.all()
+    # Retrieve goals for the user, whether personal or group-related
+    goals = Goal.query.filter((Goal.user_id == user_id) | (Goal.group_id.isnot(None))).all()
 
-    return jsonify([{
-        'id': goal.id,
-        'title': goal.title,
-        'description': goal.description,
-        'deadline': goal.deadline,
-        'created_at': goal.created_at,
-        'completed': goal.completed,
-        'user_id': goal.user_id
-    } for goal in goals]), 200
-    
-    
+    return jsonify([goal.to_dict() for goal in goals]), 200
+ 
 # Update a Goal
 @app.route('/goals/<int:goal_id>', methods=['PUT'])
 @login_required
 def update_goal(goal_id):
     goal = Goal.query.get_or_404(goal_id)  # Get the goal or return 404 if not found
 
-    # Only allow the owner of the goal to update it
-    if goal.user_id != current_user.id:
+    # Check if the user is part of the group that shares the goal
+    if goal.group_id is not None and current_user not in goal.group.members:
         return jsonify({'message': 'You are not authorized to update this goal.'}), 403
 
     data = request.get_json()
@@ -198,7 +178,9 @@ def update_goal(goal_id):
         'description': goal.description,
         'deadline': goal.deadline,
         'completed': goal.completed,
-        'user_id': goal.user_id
+        'user_id': goal.user_id,
+        'group_id' : goal.group_id  # Associate with the group if provided
+
     }}), 200
     
     
@@ -216,6 +198,81 @@ def delete_goal(goal_id):
     db.session.commit()  # Commit the changes to the database
 
     return jsonify({'message': 'Goal deleted successfully!'}), 200
+
+# Create a Group
+@app.route('/groups', methods=['POST'])
+@login_required
+def create_group():
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description')
+
+    if not name:
+        return jsonify({'message': 'Group name is required'}), 400
+
+    new_group = Group(name=name, description=description)
+    db.session.add(new_group)
+    db.session.commit()
+
+    # Automatically add the creator to the group
+    new_group.members.append(current_user)
+    db.session.commit()
+
+    return jsonify({'message': 'Group created successfully!', 'group': {'id': new_group.id, 'name': new_group.name}}), 201
+
+# Join a Group
+@app.route('/groups/join/<int:group_id>', methods=['POST'])
+@login_required
+def join_group(group_id):
+    group = Group.query.get_or_404(group_id)
+    
+    # Add the user to the group
+    if current_user not in group.members:
+        group.members.append(current_user)
+        db.session.commit()
+        return jsonify({'message': 'You have joined the group!'}), 200
+    else:
+        return jsonify({'message': 'You are already a member of this group.'}), 400
+
+# Get All Groups
+@app.route('/groups', methods=['GET'])
+def get_groups():
+    groups = Group.query.all()
+    return jsonify([{
+        'id': group.id,
+        'name': group.name,
+        'description': group.description,
+        'members': [{'id': user.id, 'username': user.username} for user in group.members]  # Include members
+    } for group in groups]), 200
+
+# Join a Group
+@app.route('/groups/<int:group_id>/join', methods=['POST'])
+@login_required
+def join_group_by_id(group_id):
+    group = Group.query.get_or_404(group_id)
+    
+    # Add the user to the group
+    if current_user not in group.members:
+        group.members.append(current_user)
+        db.session.commit()
+        return jsonify({'message': 'You have joined the group!'}), 200
+    else:
+        return jsonify({'message': 'You are already a member of this group.'}), 400
+
+# Leave a Group
+@app.route('/groups/<int:group_id>/leave', methods=['POST'])
+@login_required
+def leave_group(group_id):
+    group = Group.query.get_or_404(group_id)
+    
+    # Remove the user from the group
+    if current_user in group.members:
+        group.members.remove(current_user)
+        db.session.commit()
+        return jsonify({'message': 'You have left the group!'}), 200
+    else:
+        return jsonify({'message': 'You are not a member of this group.'}), 400
+
 
 # Run the application
 if __name__ == '__main__':

@@ -35,6 +35,7 @@
       >
         Add User
       </button>
+      <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
     </form>
   </div>
@@ -42,8 +43,6 @@
 
 <script>
 import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 
 export default {
   data() {
@@ -51,14 +50,9 @@ export default {
       username: '',
       email: '',
       password: '',
-      errorMessage: ''
+      errorMessage: '',
+      successMessage: ''
     };
-  },
-  setup() {
-    const router = useRouter(); // Using the router for navigation
-    const store = useStore(); // Using Vuex store
-
-    return { router, store };
   },
   methods: {
     async addUser() {
@@ -69,18 +63,16 @@ export default {
           password: this.password
         });
         console.log('User added:', response.data);
+        this.successMessage = 'User successfully added!';
         
-        // Commit Vuex action to update the auth state
-        this.store.dispatch('login'); // Call the Vuex login action to update state
-
-        // After successful signup, redirect to home page
-        this.router.push('/'); // Redirect to home page or dashboard
-
         // Clear input fields
         this.username = '';
         this.email = '';
         this.password = '';
         this.errorMessage = '';  // Clear error message if successful
+        
+        // Redirect to login page
+        this.$router.push('/login');
       } catch (error) {
         console.error('Error adding user:', error);
         if (error.response && error.response.data) {
@@ -97,3 +89,6 @@ export default {
 <style scoped>
 /* Add any additional styles if needed */
 </style>
+
+
+

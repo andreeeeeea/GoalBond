@@ -11,6 +11,8 @@
       <button v-if="isAuthenticated" @click="logout" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
       <button v-if="isAuthenticated" @click="addGoal" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Add Goal</button>
       <button v-if="isAuthenticated" @click="goToGoals" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">My Goals</button>
+      <button v-if="isAuthenticated" @click="createGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Create Group</button>
+      <button v-if="isAuthenticated" @click="joinGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Join Group</button>
     </div>
   </nav>
 </template>
@@ -27,6 +29,7 @@ export default {
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const username = computed(() => store.getters.getUsername || '');
+
 
     const logout = async () => {
       await store.dispatch('logout');
@@ -49,6 +52,14 @@ export default {
       router.push('/goals');
     };
 
+    const createGroup = () => {
+      router.push('/create-group');
+    };
+
+    const joinGroup = () => {
+      router.push('/join-group');
+    };
+
     return {
       isAuthenticated,
       username,
@@ -57,6 +68,8 @@ export default {
       goToSignup,
       addGoal,
       goToGoals,
+      createGroup,
+      joinGroup,
     };
   },
 };
@@ -65,3 +78,4 @@ export default {
 <style scoped>
 /* Add any additional styles if needed */
 </style>
+

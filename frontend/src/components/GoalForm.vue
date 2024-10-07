@@ -4,6 +4,22 @@
       <h2 class="text-2xl font-semibold mb-4 text-center">Add Goal</h2>
       <form @submit.prevent="addGoal">
         <div class="mb-4">
+          <label>
+            <input type="radio" v-model="goalType" value="personal" /> Personal Goal
+          </label>
+          <label class="ml-4">
+            <input type="radio" v-model="goalType" value="group" /> Group Goal
+          </label>
+        </div>
+
+        <div v-if="goalType === 'group'" class="mb-4">
+          <select v-model="selectedGroup" class="w-full p-2 border border-gray-300 rounded-lg">
+            <option disabled value="">Select a Group</option>
+            <option v-for="group in groups" :key="group.id" :value="group.id">{{ group.name }}</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
           <input
             v-model="title"
             type="text"
@@ -34,6 +50,7 @@
           Add Goal
         </button>
         <p v-if="successMessage" class="text-green-500 mt-2">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
       </form>
     </div>
 
@@ -45,7 +62,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import axios from 'axios';
 
@@ -58,6 +75,19 @@ export default {
     const hasDeadline = ref(false);
     const deadline = ref('');
     const successMessage = ref('');
+    const errorMessage = ref('');
+    const selectedGroup = ref('');
+    const groups = ref([]);
+    const goalType = ref('personal'); // New ref to store the type of goal
+
+    onMounted(async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/groups');
+        groups.value = response.data;
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    });
 
     const addGoal = async () => {
       if (!isAuthenticated.value) {
@@ -65,26 +95,34 @@ export default {
         return;
       }
 
+      const url = goalType.value === 'group'
+        ? `http://localhost:5000/groups/${selectedGroup.value}/goals`
+        : 'http://localhost:5000/goals'; // Change to the personal goals endpoint
+
       try {
-        const response = await axios.post('http://localhost:5000/goals', {
+        const response = await axios.post(url, {
           title: title.value,
           description: description.value,
-          deadline: hasDeadline.value ? new Date(deadline.value).toISOString() : null, // Handle deadline
-          dateAdded: new Date().toISOString(), // Optionally include date added
+          deadline: hasDeadline.value ? new Date(deadline.value).toISOString() : null,
+          // For personal goals, you might want to include user_id or other details if needed
         });
         console.log('Goal added:', response.data);
 
-        // Set success message
-        successMessage.value = 'Goal successfully added!';
+        successMessage.value = goalType.value === 'group'
+          ? 'Group goal successfully added!'
+          : 'Personal goal successfully added!';
+        errorMessage.value = '';
 
-        // Clear the input fields
+        // Clear input fields
         title.value = '';
         description.value = '';
         deadline.value = '';
-        hasDeadline.value = false; // Reset the hasDeadline state
+        hasDeadline.value = false;
+        selectedGroup.value = ''; // Reset selected group
       } catch (error) {
         console.error('Error adding goal:', error.response.data);
-        successMessage.value = ''; // Clear success message on error
+        successMessage.value = '';
+        errorMessage.value = error.response.data.message || 'An error occurred while adding the goal.';
       }
     };
 
@@ -95,12 +133,12 @@ export default {
       hasDeadline,
       deadline,
       successMessage,
+      errorMessage,
+      selectedGroup,
+      groups,
+      goalType,
       addGoal,
     };
   },
 };
 </script>
-
-<style scoped>
-/* Add any additional styles if needed */
-</style>
