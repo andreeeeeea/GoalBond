@@ -9,10 +9,7 @@
       <button v-if="!isAuthenticated" @click="goToLogin" class="px-4 py-2 rounded">Login</button>
       <button v-if="!isAuthenticated" @click="goToSignup" class="px-4 py-2 rounded">Sign Up</button>
       <button v-if="isAuthenticated" @click="logout" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
-      <button v-if="isAuthenticated" @click="addGoal" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Add Goal</button>
       <button v-if="isAuthenticated" @click="goToGoals" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">My Goals</button>
-      <button v-if="isAuthenticated" @click="createGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Create Group</button>
-      <button v-if="isAuthenticated" @click="joinGroup" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Join Group</button>
       <button v-if="isAuthenticated" @click="goToGroups" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Groups</button>
     </div>
   </nav>
@@ -44,20 +41,8 @@ export default {
       router.push('/signup');
     };
 
-    const addGoal = () => {
-      router.push('/add-goal');
-    };
-
     const goToGoals = () => {
       router.push('/goals');
-    };
-
-    const createGroup = () => {
-      router.push('/create-group');
-    };
-
-    const joinGroup = () => {
-      router.push('/join-group');
     };
 
     const goToGroups = () => {
@@ -70,10 +55,7 @@ export default {
       logout,
       goToLogin,
       goToSignup,
-      addGoal,
       goToGoals,
-      createGroup,
-      joinGroup,
       goToGroups,
     };
   },

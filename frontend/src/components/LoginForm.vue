@@ -32,6 +32,11 @@
         }
       },
     },
+    mounted() {
+      if (this.$store.state.isAuthenticated) {
+        this.$router.push('/');
+      }
+    },
   };
   </script>
   
@@ -39,3 +44,4 @@
   <style scoped>
   /* Add your styles here if needed */
   </style>
+

@@ -2,10 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../components/HomeView.vue';
 import LoginView from '../components/LoginForm.vue';
 import SignupView from '../components/SignUpForm.vue';
-import GoalForm from '../components/GoalForm.vue';
 import GoalsList from '@/components/GoalsList.vue';
-import GroupForm from '@/components/GroupForm.vue';
-import GroupList from '@/components/GroupList.vue';
 import GroupView from '@/components/GroupView.vue';
 
 const routes = [
@@ -25,27 +22,9 @@ const routes = [
     component: SignupView,
   },
   {
-    path: '/add-goal',
-    name: 'add-goal',
-    component: GoalForm,
-    meta: { requiresAuth: true }, // Protect this route
-  },
-  {
     path: '/goals',
     name: 'goals',
     component: GoalsList,
-    meta: { requiresAuth: true }, // Protect this route
-  },
-  {
-    path: '/create-group',
-    name: 'create-group',
-    component: GroupForm,
-    meta: { requiresAuth: true }, // Protect this route
-  },
-  {
-    path: '/join-group',
-    name: 'join-group',
-    component: GroupList,
     meta: { requiresAuth: true }, // Protect this route
   },
   {

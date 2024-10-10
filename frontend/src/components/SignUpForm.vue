@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+  <div v-if="!isAuthenticated" class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
     <h2 class="text-2xl font-semibold mb-4 text-center">User Sign Up</h2>
     <form @submit.prevent="addUser" class="space-y-4">
       <div>
@@ -54,6 +54,11 @@ export default {
       successMessage: ''
     };
   },
+  computed: {
+    isAuthenticated() {
+      return this.$store.state.isAuthenticated;
+    }
+  },
   methods: {
     async addUser() {
       try {
@@ -82,6 +87,11 @@ export default {
         }
       }
     }
+  },
+  mounted() {
+    if (this.isAuthenticated) {
+      this.$router.push('/');
+    }
   }
 };
 </script>
@@ -89,6 +99,4 @@ export default {
 <style scoped>
 /* Add any additional styles if needed */
 </style>
-
-
 
