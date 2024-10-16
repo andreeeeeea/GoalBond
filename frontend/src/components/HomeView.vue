@@ -1,3 +1,140 @@
+<script>
+import { computed, ref, onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router'; 
+import CarouselView from './CarouselView.vue';
+export default {
+  name: 'HomeView',
+  components: {
+    CarouselView
+  },
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+
+    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+    const username = computed(() => store.getters.getUsername || '');
+
+    const currentText = ref('');
+    const texts = ref(['visit Paris', 'see a movie', 'eat sushi']);
+    const currentIndex = ref(0);
+    const typingSpeed = 100;
+    const erasingSpeed = 50;
+    const delayBetweenTexts = 1500;
+
+    const testimonials = [
+      {
+        quote: "GoalBond helped me achieve my travel goals! I finally visited Paris!",
+        author: "Sarah T.",
+        image: "https://randomuser.me/api/portraits/women/15.jpg"
+      },
+      {
+        quote: "The collaborative features made planning with friends so easy and fun!",
+        author: "John D.",
+        image: "https://randomuser.me/api/portraits/men/15.jpg"
+      },
+      {
+        quote: "I was able to finally complete my bucket list thanks to GoalBond!",
+        author: "Emily W.",
+        image: "https://randomuser.me/api/portraits/women/16.jpg"
+      },
+      {
+        quote: "GoalBond is a great tool for keeping track of goals and progress. I love it!",
+        author: "David M.",
+        image: "https://randomuser.me/api/portraits/men/16.jpg"
+      }
+    ];
+
+    const slides = [
+      {
+        image: "https://images.unsplash.com/photo-1725582205921-7d681ebca2a7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Habit Tracker",
+        text: "Build habits and achieve goals"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5b?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Group Chat",
+        text: "Connect with friends and join groups"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1536010447069-d2c8af80c584?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "Progress Tracker",
+        text: "Track your progress and stay motivated"
+      }
+    ];
+
+    const currentSlide = ref(0);
+
+    const nextSlide = () => {
+      currentSlide.value = (currentSlide.value + 1) % slides.length;
+    };
+
+    const prevSlide = () => {
+      currentSlide.value = (currentSlide.value - 1 + slides.length) % slides.length;
+    };
+
+    // Auto-advance slides every 5 seconds
+    onMounted(() => {
+      setInterval(nextSlide, 5000);
+    });
+
+    const goToGoals = () => {
+      router.push('/goals');
+    };
+
+    const goToGroups = () => {
+      router.push('/groups');
+    };
+
+    const typeText = () => {
+      const fullText = texts.value[currentIndex.value];
+      let charIndex = 0;
+
+      const type = () => {
+        if (charIndex < fullText.length) {
+          currentText.value += fullText[charIndex];
+          charIndex++;
+          setTimeout(type, typingSpeed);
+        } else {
+          setTimeout(eraseText, delayBetweenTexts); // Pause before erasing
+        }
+      };
+
+      type();
+    };
+
+    const eraseText = () => {
+      const erase = () => {
+        if (currentText.value.length > 0) {
+          currentText.value = currentText.value.slice(0, -1);
+          setTimeout(erase, erasingSpeed);
+        } else {
+          currentIndex.value = (currentIndex.value + 1) % texts.value.length; // Move to the next text
+          typeText();
+        }
+      };
+
+      erase();
+    };
+
+    // Start autoplay on mounted and stop on unmounted
+    onMounted(typeText);
+
+    return {
+      isAuthenticated,
+      username,
+      goToGoals,
+      goToGroups,
+      testimonials,
+      currentText,
+      slides,
+      currentSlide,
+      nextSlide,
+      prevSlide,
+    };
+  },
+};
+</script>
 <template>
   <div class="home-view flex flex-col items-center justify-start min-h-screen pt-14">
     <section class="flex justify-between items-center w-full pt-10 px-20 pb-20">
@@ -49,37 +186,7 @@
       </div>
     </section>
 
-    <section class="flex flex-col items-center justify-center min-h-screen py-20 px-20">
-      <!-- First Div -->
-      <div class="flex w-full mt-6 justify-center relative">
-        <div class="w-1/3 pr-6 flex items-center justify-center">
-          <img src="https://images.unsplash.com/photo-1725582205921-7d681ebca2a7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Habit Tracker" class="rounded-md">
-        </div>
-        <div class="w-1/3 pl-6 flex items-center justify-center relative">
-          <p class="text-3xl font-bold text-gray-800">Build habits and achieve goals</p>
-        </div>
-      </div>
-
-      <!-- Second Div -->
-      <div class="flex w-full mt-6 justify-center relative">
-        <div class="w-1/3 pr-6 flex items-center justify-center">
-          <p class="text-3xl font-bold text-gray-800">Connect with friends and join groups</p>
-        </div>
-        <div class="w-1/3 pl-6 flex items-center justify-center">
-          <img src="https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5b?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Group Chat" class="rounded-md">
-        </div>
-      </div>
-
-      <!-- Third Div -->
-      <div class="flex w-full mt-6 justify-center relative">
-        <div class="w-1/3 pr-6 flex items-center justify-center">
-          <img src="https://images.unsplash.com/photo-1536010447069-d2c8af80c584?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Progress Tracker" class="rounded-md">
-        </div>
-        <div class="w-1/3 pl-6 flex items-center justify-center relative">
-          <p class="text-3xl font-bold text-gray-800">Track your progress and stay motivated</p>
-        </div>
-      </div>
-    </section>
+    <CarouselView />
 
     <!-- Merged Carousel Section -->
     <section class="py-20 px-20">
@@ -137,104 +244,6 @@
   </div>
 </template>
 
-<script>
-import { computed, ref, onMounted } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router'; 
-
-export default {
-  name: 'HomeView',
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-
-    const isAuthenticated = computed(() => store.getters.isAuthenticated);
-    const username = computed(() => store.getters.getUsername || '');
-
-    const currentText = ref('');
-    const texts = ref(['visit Paris', 'see a movie', 'eat sushi']);
-    const currentIndex = ref(0);
-    const typingSpeed = 100;
-    const erasingSpeed = 50;
-    const delayBetweenTexts = 1500;
-
-    const testimonials = [
-      {
-        quote: "GoalBond helped me achieve my travel goals! I finally visited Paris!",
-        author: "Sarah T.",
-        image: "https://randomuser.me/api/portraits/women/15.jpg"
-      },
-      {
-        quote: "The collaborative features made planning with friends so easy and fun!",
-        author: "John D.",
-        image: "https://randomuser.me/api/portraits/men/15.jpg"
-      },
-      {
-        quote: "I was able to finally complete my bucket list thanks to GoalBond!",
-        author: "Emily W.",
-        image: "https://randomuser.me/api/portraits/women/16.jpg"
-      },
-      {
-        quote: "GoalBond is a great tool for keeping track of goals and progress. I love it!",
-        author: "David M.",
-        image: "https://randomuser.me/api/portraits/men/16.jpg"
-      }
-    ];
-
-
-    const goToGoals = () => {
-      router.push('/goals');
-    };
-
-    const goToGroups = () => {
-      router.push('/groups');
-    };
-
-    const typeText = () => {
-      const fullText = texts.value[currentIndex.value];
-      let charIndex = 0;
-
-      const type = () => {
-        if (charIndex < fullText.length) {
-          currentText.value += fullText[charIndex];
-          charIndex++;
-          setTimeout(type, typingSpeed);
-        } else {
-          setTimeout(eraseText, delayBetweenTexts); // Pause before erasing
-        }
-      };
-
-      type();
-    };
-
-    const eraseText = () => {
-      const erase = () => {
-        if (currentText.value.length > 0) {
-          currentText.value = currentText.value.slice(0, -1);
-          setTimeout(erase, erasingSpeed);
-        } else {
-          currentIndex.value = (currentIndex.value + 1) % texts.value.length; // Move to the next text
-          typeText();
-        }
-      };
-
-      erase();
-    };
-
-    // Start autoplay on mounted and stop on unmounted
-    onMounted(typeText);
-
-    return {
-      isAuthenticated,
-      username,
-      goToGoals,
-      goToGroups,
-      testimonials,
-      currentText,
-    };
-  },
-};
-</script>
 
 <style scoped>
 .home-view {
@@ -253,5 +262,9 @@ export default {
 
 .feature-card:hover {
   transform: translateY(-5px); /* Slight lift effect on hover */
+}
+
+.overflow-hidden {
+  overflow: hidden;
 }
 </style>
