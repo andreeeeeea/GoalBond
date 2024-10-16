@@ -163,7 +163,7 @@ export default {
   setup() {
     const store = useStore();
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
-    
+
     // State to control form visibility and section toggles
     const showForm = ref(false);
     const showPersonalGoals = ref(true);
@@ -179,19 +179,52 @@ export default {
     const errorMessage = ref('');
     const selectedGroup = ref('');
     const groups = ref([]);
-    const goalType = ref('personal'); 
+    const goalType = ref('personal');
+
+    // User-specific data
+    const userGroups = ref([]);
+    const userId = ref(null);  // Fetch current user id
 
     // Goals data
     const goals = ref([]);
-    const personalGoals = computed(() => goals.value.filter(goal => !goal.is_group_goal && !goal.completed));
-    const groupGoals = computed(() => goals.value.filter(goal => goal.is_group_goal && !goal.completed));
-    const completedGoals = computed(() => goals.value.filter(goal => goal.completed));
+
+    // Fetch user's personal goals
+    const personalGoals = computed(() => goals.value.filter(goal => !goal.is_group_goal && !goal.completed && goal.user_id === userId.value));
+
+    // Fetch user's group goals (user must be part of the group)
+    const groupGoals = computed(() => {
+      return goals.value.filter(goal => {
+        return goal.is_group_goal && !goal.completed && userGroups.value.some(group => group.id === goal.group_id);
+      });
+    });
+
+    // Fetch completed goals (either the user's goals or goals from their groups)
+    const completedGoals = computed(() => {
+      return goals.value.filter(goal => {
+        const isGroupGoal = goal.is_group_goal && userGroups.value.some(group => group.id === goal.group_id);
+        const isPersonalGoal = !goal.is_group_goal && goal.user_id === userId.value;
+        return goal.completed && (isGroupGoal || isPersonalGoal);
+      });
+    });
 
     onMounted(async () => {
+      await fetchUserDetails();  // Fetch user details to get id and groups
       await fetchGoals();
       await fetchGroups();
     });
 
+    // Fetch user details to get current user id and groups
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get('/user'); // Assuming you have a /user endpoint
+        userId.value = response.data.id;
+        userGroups.value = response.data.groups;  // Get groups the user belongs to
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
+
+    // Fetch goals
     const fetchGoals = async () => {
       try {
         const response = await axios.get('/goals');
@@ -201,6 +234,7 @@ export default {
       }
     };
 
+    // Fetch groups
     const fetchGroups = async () => {
       try {
         const response = await axios.get('/groups');
@@ -289,6 +323,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /* Add any specific styles you want for this component here */

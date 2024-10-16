@@ -1,45 +1,46 @@
 <template>
-  <div v-if="!isAuthenticated" class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-    <h2 class="text-2xl font-semibold mb-4 text-center">User Sign Up</h2>
-    <form @submit.prevent="addUser" class="space-y-4">
-      <div>
+  <div class="flex flex-col items-center justify-center pt-14">
+    <h2 class="text-2xl font-bold">Sign Up</h2>
+    <form @submit.prevent="addUser" class="mt-10 w-96">
+      <div class="mb-4">
         <input 
           v-model="username" 
           type="text" 
           placeholder="Username" 
-          class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
-      <div>
+      <div class="mb-4">
         <input 
           v-model="email" 
           type="email" 
           placeholder="Email" 
-          class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
-      <div>
+      <div class="mb-4">
         <input 
           v-model="password" 
           type="password" 
           placeholder="Password" 
-          class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
       <button 
         type="submit"
-        class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-500 transition duration-200"
+        class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300"
       >
-        Add User
+        Sign Up
       </button>
       <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
     </form>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
