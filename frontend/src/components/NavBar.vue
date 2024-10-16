@@ -49,6 +49,13 @@
         >
           Groups
         </button>
+        <button
+          v-if="isAuthenticated"
+          @click="goToAccount"
+          class="text-white bg-blue-500 hover:bg-blue-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
+        >
+          Account
+        </button>
       </div>
     </div>
   </nav>
@@ -88,6 +95,10 @@ export default {
       router.push('/groups');
     };
 
+    const goToAccount = () => {
+      router.push('/account');
+    };
+
     return {
       isAuthenticated,
       username,
@@ -96,6 +107,7 @@ export default {
       goToSignup,
       goToGoals,
       goToGroups,
+      goToAccount,
     };
   },
 };

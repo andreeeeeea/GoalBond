@@ -11,14 +11,15 @@ export default createStore({
   },
   mutations: {
     SET_USER(state, user) {
-      state.user = user
-      state.isAuthenticated = !!user
+      state.user = user;
+      state.isAuthenticated = !!user;  // Set authentication status
     }
   },
   actions: {
     async login({ commit }, credentials) {
       try {
         const response = await axios.post('/login', credentials);
+        // Ensure response data contains user with email
         commit('SET_USER', response.data.user);
         return response;
       } catch (error) {
@@ -28,28 +29,29 @@ export default createStore({
     },
     async logout({ commit }) {
       try {
-        await axios.post('http://localhost:5000/logout')
-        commit('SET_USER', null)
+        await axios.post('/logout');
+        commit('SET_USER', null); // Clear user data on logout
       } catch (error) {
-        console.error('Logout error:', error)
+        console.error('Logout error:', error);
       }
     },
     async checkAuth({ commit }) {
       try {
-        const response = await axios.get('http://localhost:5000/check-auth')
+        const response = await axios.get('/check-auth');
         if (response.data.authenticated) {
-          commit('SET_USER', response.data.user)
+          commit('SET_USER', response.data.user); // Update user data if authenticated
         } else {
-          commit('SET_USER', null)
+          commit('SET_USER', null);
         }
       } catch (error) {
-        console.error('Check auth error:', error)
-        commit('SET_USER', null)
+        console.error('Check auth error:', error);
+        commit('SET_USER', null);
       }
     }
   },
   getters: {
     isAuthenticated: state => state.isAuthenticated,
-    getUsername: state => state.user ? state.user.username : ''
+    getUsername: state => (state.user ? state.user.username : ''),
+    getEmail: state => (state.user ? state.user.email : '') // Add a getter for email
   }
 });

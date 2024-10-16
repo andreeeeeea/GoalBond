@@ -4,6 +4,7 @@ import LoginView from '../components/LoginForm.vue';
 import SignupView from '../components/SignUpForm.vue';
 import GoalsList from '@/components/GoalsList.vue';
 import GroupView from '@/components/GroupView.vue';
+import AccountView from '@/components/AccountView.vue';
 
 const routes = [
   {
@@ -31,6 +32,12 @@ const routes = [
     path: '/groups',
     name: 'groups',
     component: GroupView,
+    meta: { requiresAuth: true }, // Protect this route
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: AccountView,
     meta: { requiresAuth: true }, // Protect this route
   }
 ];
