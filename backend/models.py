@@ -64,13 +64,14 @@ class Goal(db.Model):
 
 
 class Group(db.Model):
-    __tablename__ = 'groups'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
+        __tablename__ = 'groups'
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100), nullable=False)
+        description = db.Column(db.Text, nullable=True)
+        is_public = db.Column(db.Boolean, default=False)  # Public groups can be seen by other users, private groups require invitation
 
-    # Update the relationship to use back_populates
-    members = db.relationship('User', secondary=user_groups, back_populates='groups')
+        # Update the relationship to use back_populates
+        members = db.relationship('User', secondary=user_groups, back_populates='groups')
 
-    # Relationship to goals
-    goals = db.relationship('Goal', backref='group', lazy=True)
+        # Relationship to goals
+        goals = db.relationship('Goal', backref='group', lazy=True)

@@ -25,7 +25,7 @@
       <h2 class="text-2xl font-semibold mb-4">My Groups</h2>
       <ul v-if="groups.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <li v-for="group in groups" :key="group.id" class="bg-white rounded-lg shadow p-4">
-          <h3 class="text-lg font-bold">{{ group.name }}</h3>
+          <h3 class="text-lg font-bold">{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></h3>
           <p class="text-gray-700">{{ group.description }}</p>
   
           <h4 class="font-semibold mt-2">Members:</h4>
@@ -49,9 +49,9 @@
 
     <div v-if="currentView === 'joinGroups'">
       <h2 class="text-2xl font-semibold mb-4">Groups</h2>
-      <ul v-if="availableGroups.length > 0 " class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <ul v-if="availableGroups.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <li v-for="group in availableGroups" :key="group.id" class="bg-white rounded-lg shadow p-4">
-          <h3 class="text-lg font-bold">{{ group.name }}</h3>
+          <h3 class="text-lg font-bold">{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></h3>
           <p>{{ group.description }}</p>
   
           <h4 class="font-semibold mt-2">Members:</h4>
@@ -93,6 +93,13 @@
               class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
           </div>
+          <div>
+            <label for="isPublic" class="block mb-2">Group Privacy:</label>
+            <select v-model="isPublic" class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option :value="true">Public</option>
+              <option :value="false">Private</option>
+            </select>
+          </div>
           <button 
             type="submit"
             class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-500 transition duration-200"
@@ -112,17 +119,17 @@
       {{ errorMessage }}
     </div>
   </div>
+  
   <div v-else class="text-center mt-10">
       <p>You must be logged in to access groups.</p>
       <router-link to="/login" class="text-blue-500">Log In</router-link>
-    </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
 import { useStore } from 'vuex';
 import { computed } from 'vue';
-
 
 export default {
   setup() {
@@ -136,6 +143,7 @@ export default {
       availableGroups: [], // Groups available for the user to join
       name: '', // New group name
       description: '', // New group description
+      isPublic: true, // Default to public when creating a group
       successMessage: '', // Success message
       errorMessage: '',   // Error message
       currentView: 'myGroups', // Track which view is active
@@ -163,7 +171,7 @@ export default {
     },
     // Fetch available groups
     fetchAvailableGroups() {
-      axios.get('http://localhost:5000/groups')
+      axios.get('http://localhost:5000/groups/not-mine')
         .then(response => {
           this.availableGroups = response.data; // Update available groups
         })
@@ -173,13 +181,18 @@ export default {
     },
     // Join a group
     joinGroup(groupId) {
-      axios.post(`http://localhost:5000/groups/${groupId}/join`)
+      axios.post(`http://localhost:5000/groups/join/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
-          this.fetchUserGroups(); // Refresh user's groups after joining
-        })
-        .catch(error => {
+          // Find the joined group from available groups and add it to the user's groups
+          const joinedGroup = this.availableGroups.find(group => group.id === groupId);
+          if (joinedGroup) {
+            this.groups.push(joinedGroup); // Add the joined group to the user's groups
+            this.availableGroups = this.availableGroups.filter(group => group.id !== groupId); // Remove it from available groups
+          }       
+         })
+         .catch(error => {
           this.errorMessage = error.response.data.message || 'An error occurred while joining the group.';
           this.successMessage = '';
           console.error('Error joining group:', error);
@@ -187,7 +200,7 @@ export default {
     },
     // Leave a group
     leaveGroup(groupId) {
-      axios.post(`http://localhost:5000/groups/${groupId}/leave`)
+      axios.post(`http://localhost:5000/groups/leave/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
@@ -201,14 +214,20 @@ export default {
     },
     // Create a new group
     createGroup() {
+      if (!this.description) {
+        this.description = `${this.$store.state.user.username}'s ${this.isPublic ? 'public' : 'private'} group`; // Fill description using username and type of group
+      }
+      
       axios.post('/groups', {
         name: this.name,
-        description: this.description
+        description: this.description,
+        is_public: this.isPublic // Include the visibility when creating a group
       })
       .then(() => {
         this.successMessage = 'Group created successfully!';
         this.name = '';
         this.description = '';
+        this.isPublic = true; // Reset to default public option
         this.errorMessage = ''; // Clear any previous error messages
         this.fetchUserGroups(); // Refresh the user's groups after creating a new one
         this.setView('myGroups'); // Return to 'My Groups' view

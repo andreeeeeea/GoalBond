@@ -206,11 +206,12 @@ def create_group():
     data = request.get_json()
     name = data.get('name')
     description = data.get('description')
+    is_public = data.get('is_public') 
 
     if not name:
         return jsonify({'message': 'Group name is required'}), 400
 
-    new_group = Group(name=name, description=description)
+    new_group = Group(name=name, description=description, is_public=is_public)  # Add is_public here
     db.session.add(new_group)
     db.session.commit()
 
@@ -218,7 +219,7 @@ def create_group():
     new_group.members.append(current_user)
     db.session.commit()
 
-    return jsonify({'message': 'Group created successfully!', 'group': {'id': new_group.id, 'name': new_group.name}}), 201
+    return jsonify({'message': 'Group created successfully!', 'group': {'id': new_group.id, 'name': new_group.name,'is_public': new_group.is_public}}), 201
 
 # Join a Group
 @app.route('/groups/join/<int:group_id>', methods=['POST'])
@@ -226,7 +227,10 @@ def create_group():
 def join_group(group_id):
     group = Group.query.get_or_404(group_id)
     
-    # Add the user to the group
+    # Prevent joining private groups directly unless the user is invited
+    if not group.is_public and current_user not in group.members:
+        return jsonify({'message': 'You cannot join a private group without an invitation.'}), 403
+    
     if current_user not in group.members:
         group.members.append(current_user)
         db.session.commit()
@@ -234,31 +238,66 @@ def join_group(group_id):
     else:
         return jsonify({'message': 'You are already a member of this group.'}), 400
 
+
 # Get All Groups
 @app.route('/groups', methods=['GET'])
+@login_required
 def get_groups():
     groups = Group.query.all()
-    return jsonify([{
-        'id': group.id,
-        'name': group.name,
-        'description': group.description,
-        'members': [{'id': user.id, 'username': user.username} for user in group.members]  # Include members
-    } for group in groups]), 200
+    result = []
+
+    for group in groups:
+        # Show public groups to everyone; private groups only to members
+        if group.is_public or current_user in group.members:
+            result.append({
+                'id': group.id,
+                'name': group.name,
+                'description': group.description,
+                'is_public': group.is_public,
+                'members': [{'id': user.id, 'username': user.username} for user in group.members]
+            })
+
+    return jsonify(result), 200
+
     
 # Get user's group   
 @app.route('/groups/mine', methods=['GET'])
 @login_required
 def get_user_groups():
-    # Fetch groups where the user is a member
-    groups = current_user.groups  # This uses the relationship defined in the User model
+    groups = current_user.groups  # Fetch only groups the user is part of
 
     return jsonify([{
         'id': group.id,
         'name': group.name,
         'description': group.description,
+        'is_public': group.is_public,
         'members': [{'id': member.id, 'username': member.username} for member in group.members]
     } for group in groups]), 200
+    
+# Get group user isn't part of
+@app.route('/groups/not-mine', methods=['GET'])
+@login_required
+def get_groups_not_mine():
+    # Get all groups
+    all_groups = Group.query.all()
 
+    # Get user's groups
+    user_groups = set(group.id for group in current_user.groups)  # Create a set of group IDs the user is part of
+
+    # Filter groups to exclude those the user is a member of and private groups
+    groups_not_mine = [
+        {
+            'id': group.id,
+            'name': group.name,
+            'description': group.description,
+            'is_public': group.is_public,
+            'members': [{'id': member.id, 'username': member.username} for member in group.members]
+        }
+        for group in all_groups 
+        if group.id not in user_groups and group.is_public  # Only include public groups
+    ]
+
+    return jsonify(groups_not_mine), 200
 
 # Join a Group
 @app.route('/groups/<int:group_id>/join', methods=['POST'])
@@ -287,6 +326,25 @@ def leave_group(group_id):
         return jsonify({'message': 'You have left the group!'}), 200
     else:
         return jsonify({'message': 'You are not a member of this group.'}), 400
+    
+@app.route('/user')
+@login_required
+def get_user():
+    # Check if a user is logged in
+    if current_user.is_authenticated:
+        # Return user's details including groups
+        user_data = {
+            'id': current_user.id,
+            'username': current_user.username,
+            'email': current_user.email,
+            'groups': [
+                {'id': group.id, 'name': group.name}
+                for group in current_user.groups
+            ]
+        }
+        return jsonify(user_data), 200
+    else:
+        return jsonify({"error": "Unauthorized"}), 401
 
 
 # Run the application
