@@ -1,64 +1,55 @@
 <template>
-  <nav class="flex justify-between items-center bg-gray-800 px-6 py-4 shadow-lg">
-    <!-- App name -->
-    <router-link to="/" class="text-2xl font-bold text-white hover:text-indigo-400 transition-colors duration-300">
-      GoalBond
-    </router-link>
+  <header class="bg-white shadow">
+    <div class="container mx-auto flex justify-between items-center p-4">
+      <!-- App name -->
+      <router-link to="/" class="text-2xl font-bold text-gray-800 hover:text-indigo-600 transition-colors duration-300">
+        GoalBond
+      </router-link>
 
-    <!-- Right-side controls -->
-    <div class="flex items-center space-x-6">
-      <!-- Greeting message -->
-       <span v-if="isAuthenticated" class="text-gray-300 text-lg">
-        Hello, {{ username }}!
-      </span>
-
+      <!-- Right-side controls -->
+      <div class="flex items-center space-x-6">
       <!-- Authentication buttons -->
-      <div class="space-x-4">
-        <button
-          v-if="!isAuthenticated"
-          @click="goToLogin"
-          class="text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          Login
-        </button>
-        <button
-          v-if="!isAuthenticated"
-          @click="goToSignup"
-          class="text-white bg-indigo-500 hover:bg-indigo-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          Sign Up
-        </button>
-        <button
-          v-if="isAuthenticated"
-          @click="logout"
-          class="text-white bg-red-500 hover:bg-red-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          Logout
-        </button>
-        <button
-          v-if="isAuthenticated"
-          @click="goToGoals"
-          class="text-white bg-green-500 hover:bg-green-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          My Goals
-        </button>
-        <button
-          v-if="isAuthenticated"
-          @click="goToGroups"
-          class="text-white bg-yellow-500 hover:bg-yellow-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          Groups
-        </button>
-        <button
-          v-if="isAuthenticated"
-          @click="goToAccount"
-          class="text-white bg-blue-500 hover:bg-blue-600 px-5 py-2 rounded-full shadow-md transition-all duration-300"
-        >
-          Account
-        </button>
+        <div class="flex items-center space-x-4">
+          <button
+            v-if="!isAuthenticated"
+            @click="goToLogin"
+            class="text-xl text-gray-600 px-4 py-2 rounded transition duration-300"
+          >
+            Login
+          </button>
+          <button
+            v-if="!isAuthenticated"
+            @click="goToSignup"
+            class="text-xl text-gray-600  px-4 py-2 rounded transition duration-300"
+          >
+            Sign Up
+          </button>
+
+          <button
+            v-if="isAuthenticated"
+            @click="goToGoals"
+            class="text-xl text-gray-600 px-4 py-2 rounded transition duration-300"
+          >
+            Goals
+          </button>
+          <button
+            v-if="isAuthenticated"
+            @click="goToGroups"
+            class="text-xl text-gray-600 px-4 py-2 rounded transition duration-300"
+          >
+            Groups
+          </button>
+          <button
+            v-if="isAuthenticated"
+            @click="goToAccount"
+            class="text-xl text-gray-600  px-4 py-2 rounded transition duration-300"
+          >
+            Account
+          </button>
+        </div>
       </div>
     </div>
-  </nav>
+  </header>
 </template>
 
 <script>
@@ -73,11 +64,6 @@ export default {
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const username = computed(() => store.getters.getUsername || '');
-
-    const logout = async () => {
-      await store.dispatch('logout');
-      router.push('/login');
-    };
 
     const goToLogin = () => {
       router.push('/login');
@@ -102,7 +88,6 @@ export default {
     return {
       isAuthenticated,
       username,
-      logout,
       goToLogin,
       goToSignup,
       goToGoals,

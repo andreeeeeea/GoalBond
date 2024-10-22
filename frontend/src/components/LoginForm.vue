@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col items-center justify-center pt-14">
-    <h1 class="text-2xl font-bold">Login</h1>
-    <div class="w-96"> <!-- Added width to the container -->
+  <div class="items-center justify-center py-12 px-4">
+    <div class="w-96 mx-auto py-32">
+      <h1 class="text-2xl font-bold text-center">Login</h1>
       <form @submit.prevent="handleLogin" class="mt-10">
         <div class="mb-4">
           <input v-model="username" placeholder="Username" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />

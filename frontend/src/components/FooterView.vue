@@ -1,5 +1,5 @@
 <template>
-    <footer class="bg-teal-600 text-white py-6 mt-10">
+    <footer class="bg-gray-800 text-white py-6 mt-10">
       <div class="container mx-auto text-center">
         <div class="flex justify-center space-x-4 mb-4">
           <a href="#" class="hover:underline">Privacy Policy</a>
@@ -26,17 +26,6 @@
   </script>
   
   <style scoped>
-  footer {
-    background-color: #1f2937; /* Dark background */
-  }
-  
-  footer a {
-    color: #ffffff; /* White text */
-    transition: color 0.3s ease;
-  }
-  
-  footer a:hover {
-    color: #86efac; /* Light green on hover */
-  }
+
   </style>
   

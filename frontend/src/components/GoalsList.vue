@@ -75,6 +75,7 @@
       <div v-if="personalGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
         <div v-for="goal in personalGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
           <div class="flex-grow">
+            <p class="text-lg font-semibold">{{ goal.title }}</p>
             <p>{{ goal.description }}</p>
             <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
             <p>Status: To Do</p>

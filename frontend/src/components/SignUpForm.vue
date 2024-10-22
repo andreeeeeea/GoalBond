@@ -1,43 +1,48 @@
 <template>
-  <div class="flex flex-col items-center justify-center pt-14">
-    <h2 class="text-2xl font-bold">Sign Up</h2>
-    <form @submit.prevent="addUser" class="mt-10 w-96">
-      <div class="mb-4">
-        <input 
-          v-model="username" 
-          type="text" 
-          placeholder="Username" 
-          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+  <div class="items-center justify-center py-10 px-4">
+    <div class="w-96 mx-auto py-32">
+      <h2 class="text-2xl font-bold text-center">Sign Up</h2>
+      <form @submit.prevent="addUser" class="mt-10">
+        <div class="mb-4">
+          <input 
+            v-model="username" 
+            type="text" 
+            placeholder="Username" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <input 
+            v-model="email" 
+            type="email" 
+            placeholder="Email" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <input 
+            v-model="password" 
+            type="password" 
+            placeholder="Password" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <button 
+          type="submit"
+          class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300"
+        >
+          Sign Up
+        </button>
+        <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
+        <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
+      </form>
+      <div class="my-4">
+          <p class="text-center">Already have an account? <router-link to="/login" class="text-blue-500">Log In</router-link></p>
       </div>
-      <div class="mb-4">
-        <input 
-          v-model="email" 
-          type="email" 
-          placeholder="Email" 
-          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
-      <div class="mb-4">
-        <input 
-          v-model="password" 
-          type="password" 
-          placeholder="Password" 
-          class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
-      <button 
-        type="submit"
-        class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300"
-      >
-        Sign Up
-      </button>
-      <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
-      <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
-    </form>
+    </div>   
   </div>
 </template>
 
