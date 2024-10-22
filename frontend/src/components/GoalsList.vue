@@ -39,6 +39,7 @@
             class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
+
         <div class="mb-4">
           <textarea
             v-model="description"
@@ -46,20 +47,41 @@
             class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           ></textarea>
         </div>
+
+        <div class="mb-4">
+          <label for="category">Category:</label>
+          <select v-model="category" id="category" class="w-full p-2 border border-gray-300 rounded-lg">
+            <option disabled value="">Select a Category</option>
+            <option value="Books">Books</option>
+            <option value="Coding">Coding</option>
+            <option value="Cooking">Cooking</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Food and Dining">Food and Dining</option>
+            <option value="Movies">Movies/Series</option>
+            <option value="Music">Music</option>
+            <option value="Photography">Photography</option>
+            <option value="Travel">Travel</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
         <div class="mb-4">
           <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
           <label for="hasDeadline">Add Deadline?</label>
         </div>
+
         <div v-if="hasDeadline" class="mb-4">
           <label for="deadline">Deadline:</label>
           <input type="date" id="deadline" v-model="deadline" required />
         </div>
+
         <button
           type="submit"
           class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-500 transition duration-300"
         >
           Add Goal
         </button>
+
         <p v-if="successMessage" class="text-green-500 mt-2">{{ successMessage }}</p>
         <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
       </form>
@@ -77,6 +99,7 @@
           <div class="flex-grow">
             <p class="text-lg font-semibold">{{ goal.title }}</p>
             <p>{{ goal.description }}</p>
+            <p> Category: {{ goal.category }}</p>
             <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
             <p>Status: To Do</p>
           </div>
@@ -103,6 +126,7 @@
             <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
             <p>{{ goal.description }}</p>
             <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+            <p> Category: {{ goal.category }}</p>
             <p>Status: To Do</p>
             <p>Group: {{ goal.group.name }}</p>
             <p>Members: 
@@ -132,6 +156,7 @@
             <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
             <p>{{ goal.description }}</p>
             <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+            <p> Category: {{ goal.category }}</p>
             <p>Status: Completed</p>
             <p v-if="goal.is_group_goal">Group: {{ goal.group.name }}</p>
             <p v-if="goal.is_group_goal">Members: 
@@ -181,6 +206,7 @@ export default {
     const selectedGroup = ref('');
     const groups = ref([]);
     const goalType = ref('personal');
+    const category = ref('');
 
     // User-specific data
     const userGroups = ref([]);
@@ -246,19 +272,38 @@ export default {
     };
 
     const addGoal = async () => {
-      if (!title.value || !description.value) {
+      if (!title.value ) {
         errorMessage.value = 'Please provide a title and description for the goal.';
         return;
       }
 
-      const goalData = {
-        title: title.value,
-        description: description.value,
+      if (!category.value) {
+        errorMessage.value = 'Please select a category.';
+        return;     
+      }
+
+      errorMessage.value = '';
+
+      const titleCapitalized = title.value
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      const descriptionCapitalized = description.value
+        ? `${description.value.charAt(0).toUpperCase()}${description.value.slice(1)}${/[\w]$/.test(description.value) && !/[.!?]$/.test(description.value) ? '.' : ''}`
+        : '';
+
+     const goalData = {
+        title: titleCapitalized,
+        description: descriptionCapitalized,
         hasDeadline: hasDeadline.value,
         deadline: hasDeadline.value ? deadline.value : null,
         is_group_goal: goalType.value === 'group',
         group_id: goalType.value === 'group' ? selectedGroup.value : null,
+        category: category.value,
       };
+
+
 
       try {
         const response = await axios.post('/goals', goalData);
@@ -266,9 +311,11 @@ export default {
         successMessage.value = 'Goal added successfully!';
         clearForm();
         await fetchGoals();
+        setTimeout(() => successMessage.value = '', 4000);
       } catch (error) {
         errorMessage.value = 'Failed to add goal.';
         console.error("Error adding goal:", error);
+        setTimeout(() => errorMessage.value = '', 4000);
       }
     };
 
@@ -279,6 +326,7 @@ export default {
       deadline.value = '';
       selectedGroup.value = '';
       goalType.value = 'personal';
+      category.value = '';
     };
 
     const toggleGoalCompletion = async (goal) => {
@@ -309,6 +357,7 @@ export default {
       selectedGroup,
       groups,
       goalType,
+      category,
       personalGoals,
       groupGoals,
       completedGoals,

@@ -36,6 +36,7 @@ class Goal(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     deadline = db.Column(db.DateTime, nullable=True)
     completed = db.Column(db.Boolean, default=False)
+    category = db.Column(db.String(100), nullable=False)
 
     def to_dict(self):
         group_data = None
@@ -59,7 +60,8 @@ class Goal(db.Model):
             'completed': self.completed,
             'has_deadline': self.deadline is not None,  # Check if deadline is set
             'is_group_goal': self.group_id is not None,  # Check if the goal is associated with a group
-            'group': group_data  # Include group data if applicable
+            'group': group_data,  # Include group data if applicable
+            'category': self.category
         }
 
 

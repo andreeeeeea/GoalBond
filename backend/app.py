@@ -119,6 +119,7 @@ def create_goal():
     deadline = data.get('deadline')
     group_id = data.get('group_id')  # Get the group_id if provided
     user_id = current_user.id  # User ID to associate the goal with a user
+    category = data.get('category')
 
     if not title or user_id is None:
         return jsonify({'message': 'Missing title or user_id'}), 400
@@ -135,7 +136,8 @@ def create_goal():
         deadline=deadline if deadline else None,  # Allow deadline to be None if not provided
         completed=False,
         user_id=user_id,
-        group_id=group_id  # Associate with the group if provided
+        group_id=group_id,  # Associate with the group if provided
+        category=category
     )
     db.session.add(new_goal)
     db.session.commit()
