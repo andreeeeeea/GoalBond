@@ -29,13 +29,13 @@
       <div v-if="isAuthenticated" class="flex space-x-6 mt-8">
         <button
           @click="goToGoals"
-          class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
+          class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
         >
           Check Goals
         </button>
         <button
           @click="goToGroups"
-          class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
+          class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
         >
           Check Groups
         </button>

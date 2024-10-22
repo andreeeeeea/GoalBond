@@ -2,11 +2,11 @@
   <div v-if="isAuthenticated" class="mx-4">   
     <section class="flex">
       <!-- Sidebar for Goal Categories -->
-      <div class="w-56 bg-gray-100 py-4 h-screen overflow-y-auto">
+      <div class="w-1/6 bg-gray-100 py-4 h-screen overflow-y-auto">
         <h2 class="text-xl font-semibold mb-2">Goal Categories</h2>
-        <div v-for="category in goalCategories" :key="category" @click="selectCategory(category)" class="cursor-pointer p-2 hover:bg-gray-300 rounded border-b">
+        <div v-for="category in goalCategories" :key="category" @click="selectCategory(category)" :class="{ 'bg-gray-300': category === selectedCategory }" class="cursor-pointer p-2 mr-5 hover:bg-gray-300 rounded border-b">
           {{ category }}
-        </div>     
+        </div>
         <!-- Button to Toggle Form Visibility -->
         <div class="text-left mt-5">
           <button
@@ -138,7 +138,7 @@
                 </button>
               </div>
             </div>
-            <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto">
+            <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
               <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
               <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
               <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
@@ -199,7 +199,7 @@ export default {
     // Available goal categories
     const goalCategories = [
       'Books', 'Coding', 'Cooking', 'Fitness',
-      'Food and Dining', 'Movies/Series', 'Series',
+      'Food and Dining', 'Movies', 'Series',
       'Music', 'Photography', 'Travel', 'Other'
     ];
 
