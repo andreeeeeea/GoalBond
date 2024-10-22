@@ -38,6 +38,10 @@ class Goal(db.Model):
     completed = db.Column(db.Boolean, default=False)
     category = db.Column(db.String(100), nullable=False)
 
+    # New columns for season and episode
+    season = db.Column(db.Integer, nullable=True)
+    episode = db.Column(db.Integer, nullable=True)
+
     def to_dict(self):
         group_data = None
         if self.group_id:
@@ -61,9 +65,10 @@ class Goal(db.Model):
             'has_deadline': self.deadline is not None,  # Check if deadline is set
             'is_group_goal': self.group_id is not None,  # Check if the goal is associated with a group
             'group': group_data,  # Include group data if applicable
-            'category': self.category
+            'category': self.category,
+            'season': self.season,  # Include season if applicable
+            'episode': self.episode,  # Include episode if applicable
         }
-
 
 class Group(db.Model):
         __tablename__ = 'groups'

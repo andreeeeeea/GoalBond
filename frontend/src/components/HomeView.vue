@@ -19,6 +19,7 @@
       <!-- Button for Unauthenticated Users -->
       <button
         v-if="!isAuthenticated"
+        @click="goToSignUp"
         class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
       >
         Join GoalBond Now!
@@ -190,6 +191,10 @@ export default {
       setInterval(nextSlide, 5000);
     });
 
+    const goToSignUp = () => {
+      router.push('/signup');
+    };
+
     const goToGoals = () => {
       router.push('/goals');
     };
@@ -235,6 +240,7 @@ export default {
     return {
       isAuthenticated,
       username,
+      goToSignUp,
       goToGoals,
       goToGroups,
       testimonials,

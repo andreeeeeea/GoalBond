@@ -129,6 +129,10 @@ def create_goal():
     if user is None:
         return jsonify({'message': 'User not found'}), 404
 
+    # Extract season and episode if category is 'Series'
+    season = data.get('season') if category == 'Series' else None
+    episode = data.get('episode') if category == 'Series' else None
+
     # Create the new goal
     new_goal = Goal(
         title=title,
@@ -137,8 +141,11 @@ def create_goal():
         completed=False,
         user_id=user_id,
         group_id=group_id,  # Associate with the group if provided
-        category=category
+        category=category,
+        season=season,  # Include season
+        episode=episode   # Include episode
     )
+    
     db.session.add(new_goal)
     db.session.commit()
 
@@ -146,6 +153,7 @@ def create_goal():
         'message': 'Goal created successfully!',
         'goal': new_goal.to_dict()  # Call the updated to_dict() method
     }), 201
+
 
 # Get all Goals
 @app.route('/goals', methods=['GET'])
@@ -169,23 +177,35 @@ def update_goal(goal_id):
         return jsonify({'message': 'You are not authorized to update this goal.'}), 403
 
     data = request.get_json()
+    
+    # Update completed status if provided
     if 'completed' in data:
         goal.completed = data['completed']  # Update the completed status
 
+    # Update season and episode if the goal is a series
+    if goal.category == 'Series':
+        if 'season' in data:
+            goal.season = data['season']  # Update the season if provided
+        if 'episode' in data:
+            goal.episode = data['episode']  # Update the episode if provided
+
     db.session.commit()  # Save changes to the database
 
-    return jsonify({'message': 'Goal updated successfully!', 'goal': {
-        'id': goal.id,
-        'title': goal.title,
-        'description': goal.description,
-        'deadline': goal.deadline,
-        'completed': goal.completed,
-        'user_id': goal.user_id,
-        'group_id' : goal.group_id  # Associate with the group if provided
+    return jsonify({
+        'message': 'Goal updated successfully!', 
+        'goal': {
+            'id': goal.id,
+            'title': goal.title,
+            'description': goal.description,
+            'deadline': goal.deadline,
+            'completed': goal.completed,
+            'user_id': goal.user_id,
+            'group_id': goal.group_id,  # Include group_id if applicable
+            'season': goal.season,  # Include season in the response
+            'episode': goal.episode   # Include episode in the response
+        }
+    }), 200
 
-    }}), 200
-    
-    
 # Remove a Goal
 @app.route('/goals/<int:goal_id>', methods=['DELETE'])
 @login_required

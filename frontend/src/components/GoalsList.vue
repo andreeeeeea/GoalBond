@@ -58,11 +58,22 @@
             <option value="Fitness">Fitness</option>
             <option value="Food and Dining">Food and Dining</option>
             <option value="Movies">Movies/Series</option>
+            <option value="Series">Series</option>
             <option value="Music">Music</option>
             <option value="Photography">Photography</option>
             <option value="Travel">Travel</option>
             <option value="Other">Other</option>
           </select>
+        </div>
+
+        <div v-if="category === 'Series'" class="mb-4">
+          <label for="season">Season:</label>
+          <input type="number" id="season" v-model="season" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+
+        <div v-if="category === 'Series'" class="mb-4">
+          <label for="episode">Episode:</label>
+          <input type="number" id="episode" v-model="episode" class="w-full p-2 border border-gray-300 rounded-lg" required />
         </div>
 
         <div class="mb-4">
@@ -87,92 +98,118 @@
       </form>
     </div>
 
-
-    <!-- Section for Personal Goals -->
-    <div @click="showPersonalGoals = !showPersonalGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
-      <h2 class="text-xl font-semibold">Personal Goals</h2>
-      <span :class="['transition-transform', showPersonalGoals ? 'rotate-180' : '']">▼</span>
-    </div>
-    <div v-if="showPersonalGoals">
-      <div v-if="personalGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
-        <div v-for="goal in personalGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
-          <div class="flex-grow">
-            <p class="text-lg font-semibold">{{ goal.title }}</p>
-            <p>{{ goal.description }}</p>
-            <p> Category: {{ goal.category }}</p>
-            <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-            <p>Status: To Do</p>
-          </div>
-          <div class="mt-auto">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
-            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-          </div>
-        </div>
+    <section>
+      <!-- Section for Personal Goals -->
+      <div @click="showPersonalGoals = !showPersonalGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
+        <h2 class="text-xl font-semibold">Personal Goals</h2>
+        <span :class="['transition-transform', showPersonalGoals ? 'rotate-180' : '']">▼</span>
       </div>
-      <div v-else class="text-center mt-4">
-        <p>No personal goals found.</p>
-      </div>
-    </div>
-
-    <!-- Section for Group Goals -->
-    <div @click="showGroupGoals = !showGroupGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
-      <h2 class="text-xl font-semibold">Group Goals</h2>
-      <span :class="['transition-transform', showGroupGoals ? 'rotate-180' : '']">▼</span>
-    </div>
-    <div v-if="showGroupGoals">
-      <div v-if="groupGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
-        <div v-for="goal in groupGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
-          <div class="flex-grow">
-            <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
-            <p>{{ goal.description }}</p>
-            <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-            <p> Category: {{ goal.category }}</p>
-            <p>Status: To Do</p>
-            <p>Group: {{ goal.group.name }}</p>
-            <p>Members: 
-              <span v-for="member in goal.group.members" :key="member.id">{{ member.username }}<span v-if="!$last">, </span></span>
-            </p>
-          </div>
-          <div class="mt-auto">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
-            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+      <div v-if="showPersonalGoals">
+        <div v-if="personalGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
+          <div v-for="goal in personalGoals.slice().sort((a, b) => a.title.localeCompare(b.title))" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
+            <div class="flex-grow">
+              <p class="text-lg font-semibold">{{ goal.title }}</p>
+              <p>{{ goal.description }}</p>
+              <p>Category: {{ goal.category }}</p>
+              <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
+              <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <p>Status: To Do</p>
+            </div>
+            <div class="mb-2">
+              <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
+                <h4 class="mt-4 text-lg font-semibold">Update Current Episode</h4>
+                <div>
+                  <label for="currentSeason">Season:</label>
+                  <input type="number" id="currentSeason" v-model="goalToUpdate.season" min="1" class="border rounded py-1 px-2" required />
+                </div>
+                <div>
+                  <label for="currentEpisode">Episode:</label>
+                  <input type="number" id="currentEpisode" v-model="goalToUpdate.episode" min="1" class="border rounded py-1 px-2" required />
+                </div>
+                <button @click="updateGoal(goalToUpdate)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  Save
+                </button>
+                
+                <button @click="cancelUpdate" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto">
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
+              <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+              <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
+            </div>
           </div>
         </div>
+        <div v-else class="text-center mt-4">
+          <p>No personal goals found.</p>
+        </div>
       </div>
-      <div v-else class="text-center mt-4">
-        <p>No group goals found.</p>
-      </div>
-    </div>
 
-    <!-- Section for Completed Goals -->
-    <div @click="showCompletedGoals = !showCompletedGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
-      <h2 class="text-xl font-semibold">Completed Goals</h2>
-      <span :class="['transition-transform', showCompletedGoals ? 'rotate-180' : '']">▼</span>
-    </div>
-    <div v-if="showCompletedGoals">
-      <div v-if="completedGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
-        <div v-for="goal in completedGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
-          <div class="flex-grow">
-            <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
-            <p>{{ goal.description }}</p>
-            <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-            <p> Category: {{ goal.category }}</p>
-            <p>Status: Completed</p>
-            <p v-if="goal.is_group_goal">Group: {{ goal.group.name }}</p>
-            <p v-if="goal.is_group_goal">Members: 
-              <span v-for="member in goal.group.members" :key="member.id">{{ member.username }}<span v-if="!$last">, </span></span>
-            </p>
+      <!-- Section for Group Goals -->
+      <div @click="showGroupGoals = !showGroupGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
+        <h2 class="text-xl font-semibold">Group Goals</h2>
+        <span :class="['transition-transform', showGroupGoals ? 'rotate-180' : '']">▼</span>
+      </div>
+      <div v-if="showGroupGoals">
+        <div v-if="groupGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
+          <div v-for="goal in groupGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
+            <div class="flex-grow">
+              <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
+              <p>{{ goal.description }}</p>
+              <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <p> Category: {{ goal.category }}</p>
+              <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
+              <p>Status: To Do</p>
+              <p>Group: {{ goal.group.name }}</p>
+              <p>Members: 
+                <span v-for="member in goal.group.members" :key="member.id">{{ member.username }}<span v-if="!$last">, </span></span>
+              </p>
+            </div>
+            <div class="mt-auto">
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
+              <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+            </div>
           </div>
-          <div class="mt-auto">
-            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Re-do Goal</button>
-            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-          </div>
+        </div>
+        <div v-else class="text-center mt-4">
+          <p>No group goals found.</p>
+        </div>
       </div>
+
+      <!-- Section for Completed Goals -->
+      <div @click="showCompletedGoals = !showCompletedGoals" class="flex justify-between items-center cursor-pointer p-2 bg-gray-200 rounded-md mt-4">
+        <h2 class="text-xl font-semibold">Completed Goals</h2>
+        <span :class="['transition-transform', showCompletedGoals ? 'rotate-180' : '']">▼</span>
       </div>
-      <div v-else class="text-center mt-4">
-        <p>No completed goals found.</p>
+      <div v-if="showCompletedGoals">
+        <div v-if="completedGoals.length > 0" class="grid grid-cols-4 md:grid-cols-4 gap-4">
+          <div v-for="goal in completedGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-56">
+            <div class="flex-grow">
+              <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
+              <p>{{ goal.description }}</p>
+              <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <p> Category: {{ goal.category }}</p>
+              <p>Status: Completed</p>
+              <p v-if="goal.is_group_goal">Group: {{ goal.group.name }}</p>
+              <p v-if="goal.is_group_goal">Members: 
+                <span v-for="member in goal.group.members" :key="member.id">{{ member.username }}<span v-if="!$last">, </span></span>
+              </p>
+            </div>
+            <div class="mt-auto">
+              <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Re-do Goal</button>
+              <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+            </div>
+        </div>
+        </div>
+        <div v-else class="text-center mt-4">
+          <p>No completed goals found.</p>
+        </div>
       </div>
-    </div>
+    </section>
+
+
   </div>
   <div v-else class="text-center mt-10">
     <p>You must be logged in to access goals.</p>
@@ -207,6 +244,10 @@ export default {
     const groups = ref([]);
     const goalType = ref('personal');
     const category = ref('');
+    const season = ref('');
+    const episode = ref('');
+    const goalToUpdate = ref(null); // New state for the goal to update
+
 
     // User-specific data
     const userGroups = ref([]);
@@ -282,6 +323,11 @@ export default {
         return;     
       }
 
+      if(category.value === 'Series' && (!season.value || !episode.value)) {
+        errorMessage.value = 'Please provide a season and episode number.';
+        return;
+      }
+
       errorMessage.value = '';
 
       const titleCapitalized = title.value
@@ -301,9 +347,9 @@ export default {
         is_group_goal: goalType.value === 'group',
         group_id: goalType.value === 'group' ? selectedGroup.value : null,
         category: category.value,
+        season: category.value === 'Series' ? season.value : null,
+        episode: category.value === 'Series' ? episode.value : null,
       };
-
-
 
       try {
         const response = await axios.post('/goals', goalData);
@@ -327,6 +373,8 @@ export default {
       selectedGroup.value = '';
       goalType.value = 'personal';
       category.value = '';
+      season.value = '';
+      episode.value = '';
     };
 
     const toggleGoalCompletion = async (goal) => {
@@ -347,6 +395,33 @@ export default {
       }
     };
 
+    const updateGoal = async (goal) => {
+      try {
+        // Update the goal in the backend
+        await axios.put(`/goals/${goal.id}`, {
+          season: goal.season,
+          episode: goal.episode,
+        });
+        
+        // Refresh the goals after update
+        await fetchGoals();
+
+        // Clear the goal to update
+        goalToUpdate.value = null;
+      } catch (error) {
+        console.error("Error updating goal:", error);
+      }
+    };
+
+    const showUpdateForm = (goal) => {
+      console.log('Showing update form for goal:', goal); // Log the goal
+      goalToUpdate.value = { ...goal }; // Clone the goal to prevent direct mutation
+    };
+
+    const cancelUpdate = () => {
+      goalToUpdate.value = null; // Reset the update state
+    };
+
     return {
       title,
       description,
@@ -358,6 +433,9 @@ export default {
       groups,
       goalType,
       category,
+      season,
+      episode,
+      goalToUpdate,
       personalGoals,
       groupGoals,
       completedGoals,
@@ -369,6 +447,9 @@ export default {
       addGoal,
       toggleGoalCompletion,
       deleteGoal,
+      updateGoal,
+      showUpdateForm,
+      cancelUpdate,
     };
   },
 };
