@@ -1,6 +1,6 @@
 <template>
   <div class="home-view relative flex flex-col items-center justify-center">
-    <section class="relative z-10 flex flex-col justify-center items-center w-full space-y-6 text-center pt-24">
+    <section class="relative z-10 flex flex-col justify-center items-center w-full space-y-6 text-center py-36">
       <div class="text-5xl my-1 typing-text">
         <span class="caveat-font text-gray-800">I want to... </span>
         <span class="caveat-font text-gray-800">{{ currentText }}</span>
@@ -42,12 +42,13 @@
       </div>
     </section>
 
-    <div class="screenshot-placeholder flex justify-center items-center py-16">
-      <div class="relative w-2/4"> <!-- Added a relative container for shadow effect -->
+    <div class="screenshot-placeholder flex justify-center items-center pb-28">
+      <div class="relative w-7/12">
         <img 
           src="https://images.unsplash.com/photo-1553649033-3fbc8d0fa3cb?ixlib=rb-4.0.3" 
           alt="Screenshot of Goals Page" 
-          class="shadow-black shadow-2xl rounded-xl w-full h-auto" 
+          class=" rounded-xl w-full h-auto" 
+          style="mask-image: linear-gradient(to bottom, black 60%, transparent 100%);" 
         />
       </div>
     </div>
