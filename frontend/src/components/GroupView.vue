@@ -21,6 +21,21 @@
       </button>
     </div>
 
+    <div class="mb-4 flex justify-center space-x-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Search for a group"
+        class="border border-gray-300 rounded-lg p-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        @click="searchGroups"
+        class="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-500 transition duration-300"
+      >
+        Search
+      </button>
+    </div>
+
     <div v-if="currentView === 'myGroups'">
       <h2 class="text-2xl font-semibold mb-4">My Groups</h2>
       <ul v-if="groups.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -139,58 +154,55 @@ export default {
   },
   data() {
     return {
-      groups: [], // User's groups
-      availableGroups: [], // Groups available for the user to join
-      name: '', // New group name
-      description: '', // New group description
-      isPublic: true, // Default to public when creating a group
-      successMessage: '', // Success message
-      errorMessage: '',   // Error message
-      currentView: 'myGroups', // Track which view is active
+      groups: [],
+      availableGroups: [],
+      name: '',
+      description: '',
+      isPublic: true,
+      successMessage: '',
+      errorMessage: '',
+      currentView: 'myGroups',
+      searchQuery: ''
     };
   },
   mounted() {
-    this.fetchUserGroups(); // Fetch the user's groups on mount
+    this.fetchUserGroups();
   },
   methods: {
     setView(view) {
       this.currentView = view;
       if (view === 'joinGroups') {
-        this.fetchAvailableGroups(); // Fetch available groups if user wants to join a group
+        this.fetchAvailableGroups();
       }
     },
-    // Fetch user's groups
     fetchUserGroups() {
       axios.get('http://localhost:5000/groups/mine')
         .then(response => {
-          this.groups = response.data; // Update user's groups
+          this.groups = response.data;
         })
         .catch(error => {
           console.error('Error fetching user groups:', error);
         });
     },
-    // Fetch available groups
     fetchAvailableGroups() {
       axios.get('http://localhost:5000/groups/not-mine')
         .then(response => {
-          this.availableGroups = response.data; // Update available groups
+          this.availableGroups = response.data;
         })
         .catch(error => {
           console.error('Error fetching available groups:', error);
         });
     },
-    // Join a group
     joinGroup(groupId) {
       axios.post(`http://localhost:5000/groups/join/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
-          // Find the joined group from available groups and add it to the user's groups
           const joinedGroup = this.availableGroups.find(group => group.id === groupId);
           if (joinedGroup) {
-            this.groups.push(joinedGroup); // Add the joined group to the user's groups
-            this.availableGroups = this.availableGroups.filter(group => group.id !== groupId); // Remove it from available groups
-          }       
+            this.groups.push(joinedGroup);
+            this.availableGroups = this.availableGroups.filter(group => group.id !== groupId);
+          }
          })
          .catch(error => {
           this.errorMessage = error.response.data.message || 'An error occurred while joining the group.';
@@ -198,13 +210,12 @@ export default {
           console.error('Error joining group:', error);
         });
     },
-    // Leave a group
     leaveGroup(groupId) {
       axios.post(`http://localhost:5000/groups/leave/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
-          this.fetchUserGroups(); // Refresh user's groups after leaving
+          this.fetchUserGroups();
         })
         .catch(error => {
           this.errorMessage = error.response.data.message || 'An error occurred while leaving the group.';
@@ -212,31 +223,41 @@ export default {
           console.error('Error leaving group:', error);
         });
     },
-    // Create a new group
     createGroup() {
       if (!this.description) {
-        this.description = `${this.$store.state.user.username}'s ${this.isPublic ? 'public' : 'private'} group`; // Fill description using username and type of group
+        this.description = `${this.$store.state.user.username}'s ${this.isPublic ? 'public' : 'private'} group`;
       }
       
       axios.post('/groups', {
         name: this.name,
         description: this.description,
-        is_public: this.isPublic // Include the visibility when creating a group
+        is_public: this.isPublic
       })
       .then(() => {
         this.successMessage = 'Group created successfully!';
         this.name = '';
         this.description = '';
-        this.isPublic = true; // Reset to default public option
-        this.errorMessage = ''; // Clear any previous error messages
-        this.fetchUserGroups(); // Refresh the user's groups after creating a new one
-        this.setView('myGroups'); // Return to 'My Groups' view
+        this.isPublic = true;
+        this.errorMessage = '';
+        this.fetchUserGroups();
+        this.setView('myGroups');
       })
       .catch(error => {
         this.errorMessage = error.response && error.response.data.message ? error.response.data.message : 'An error occurred';
-        this.successMessage = '';  // Clear the success message if there's an error
+        this.successMessage = '';
       });
     },
+    searchGroups() {
+      axios.get(`http://localhost:5000/groups/search?query=${this.searchQuery}`)
+        .then(response => {
+          this.availableGroups = response.data;
+          this.currentView = 'joinGroups';
+        })
+        .catch(error => {
+          this.errorMessage = 'An error occurred while searching for groups.';
+          console.error('Error searching groups:', error);
+        });
+    }
   },
 };
 </script>
@@ -247,3 +268,4 @@ export default {
   margin: 0 auto;
 }
 </style>
+

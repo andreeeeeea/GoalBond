@@ -349,6 +349,28 @@ def leave_group(group_id):
     else:
         return jsonify({'message': 'You are not a member of this group.'}), 400
     
+# Search for Groups
+@app.route('/groups/search', methods=['GET'])
+@login_required
+def search_groups():
+    query = request.args.get('query')
+    
+    if not query or query.strip() == "":
+        return jsonify([]), 200
+    
+    groups = Group.query.filter(Group.is_public.is_(True), Group.name.ilike(f'%{query}%')).all()
+
+    result = [{
+        'id': group.id,
+        'name': group.name,
+        'description': group.description,
+        'is_public': group.is_public,
+        'members': [{'id': member.id, 'username': member.username} for member in group.members]
+    } for group in groups]
+
+    return jsonify(result), 200
+
+    
 @app.route('/user')
 @login_required
 def get_user():

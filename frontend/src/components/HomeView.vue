@@ -108,6 +108,36 @@
       </div>
     </section>
 
+    <section class="py-20 px-20">
+      <h2 class="text-4xl font-bold text-gray-800 text-center my-14">What Our Users Say</h2>
+      <div class="relative w-full max-w-8xl flex items-center justify-center mt-12 pb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div
+            v-for="(testimonial, index) in testimonials"
+            :key="index"
+            class="w-full mx-auto rounded-lg bg-white shadow-lg px-5 pt-5 pb-10 text-gray-800 transition-transform duration-300 transform hover:scale-105"
+            style="max-width: 500px;"
+          >
+            <div class="w-full pt-1 pb-5">
+              <div class="overflow-hidden rounded-full w-20 h-20 -mt-16 mx-auto shadow-lg">
+                <img :src="testimonial.image" alt="" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div class="w-full mb-10 text-center">
+              <div class="text-3xl text-indigo-500 text-left leading-tight h-3">“</div>
+              <p class="text-sm text-gray-600 px-5">{{ testimonial.quote }}</p>
+              <div class="text-3xl text-indigo-500 text-right leading-tight h-3 -mt-3">”</div>
+            </div>
+            <div class="w-full text-center">
+              <p class="text-md text-indigo-500 font-bold">{{ testimonial.author }}</p>
+              <p class="text-xs text-gray-500">@{{ testimonial.username }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
 
   </div>
 </template>
