@@ -107,48 +107,123 @@
       <div class=" min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
       <!-- Main section for displaying goals -->
       <div class="w-3/4 py-4 mx-10">
-        <h2 class="text-xl font-semibold mb-4">{{ selectedCategory }}</h2>        
-        <!-- Displaying goals based on the selected category -->
-        <div v-if="filteredGoals.length > 0" class="grid grid-cols-4 gap-4">
-          <div v-for="goal in filteredGoals" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-            <div class="flex-grow">
-              <p class="text-lg font-semibold">{{ goal.title }}</p>
-              <p>{{ goal.description }}</p>
-              <p>Category: {{ goal.category }}</p>
-              <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
-              <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-              <p>Status: To Do</p>
-            </div>
-            <div class="mb-2">
-              <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
-                <h4 class="mt-4 text-lg font-semibold">Update Current Episode</h4>
-                <div>
-                  <label for="currentSeason">Season:</label>
-                  <input type="number" id="currentSeason" v-model="goalToUpdate.season" min="1" class="border rounded py-1 px-2" required />
+        <h2 class="text-3xl font-bold mb-4">{{ selectedCategory }}</h2>       
+        <!-- Display Personal Goals -->
+         <div class="py-4">
+          <h3 class="text-lg font-semibold mb-2">Personal Goals</h3>
+          <div v-if="personalGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
+            <div v-for="goal in personalGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
+              <!-- Goal Content -->
+              <div class="flex-grow">
+                <p class="text-lg font-semibold">{{ goal.title }}</p>
+                <p>{{ goal.description }}</p>
+                <p>Category: {{ goal.category }}</p>
+                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
+                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+                <p>Status: {{ goal.completed ? 'Completed' : 'Not Completed' }}</p>
+              </div>
+              <!-- Goal Actions -->
+              <div class="mb-2">
+                <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
+                  <h4 class="mt-4 text-lg font-semibold">Update Current Episode</h4>
+                  <div>
+                    <label for="currentSeason">Season:</label>
+                    <input type="number" id="currentSeason" v-model="goalToUpdate.season" min="1" class="border rounded py-1 px-2" required />
+                  </div>
+                  <div>
+                    <label for="currentEpisode">Episode:</label>
+                    <input type="number" id="currentEpisode" v-model="goalToUpdate.episode" min="1" class="border rounded py-1 px-2" required />
+                  </div>
+                  <button @click="updateGoal(goalToUpdate)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save
+                  </button>
+                  <button @click="cancelUpdate" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Cancel
+                  </button>
                 </div>
-                <div>
-                  <label for="currentEpisode">Episode:</label>
-                  <input type="number" id="currentEpisode" v-model="goalToUpdate.episode" min="1" class="border rounded py-1 px-2" required />
-                </div>
-                <button @click="updateGoal(goalToUpdate)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                  Save
-                </button>
-                <button @click="cancelUpdate" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                  Cancel
-                </button>
+              </div>
+              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+                <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
               </div>
             </div>
-            <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
-              <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
-              <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-              <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
+          </div>
+          <div v-else class="text-center mt-4">
+            <p>No personal goals found in this category.</p>
+          </div>
+         </div>
+        <!-- Display Group Goals -->
+         <div class="py-4">
+          <h3 class="text-lg font-semibold mb-2">Group Goals</h3>
+          <div v-if="groupGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
+            <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
+              <!-- Goal Content -->
+              <div class="flex-grow">
+                <p class="text-lg font-semibold">{{ goal.title }}</p>
+                <p>{{ goal.description }}</p>
+                <p>Category: {{ goal.category }}</p>
+                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
+                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+                <p>Status: {{ goal.completed ? 'Completed' : 'Not Completed' }}</p>
+              </div>
+              <!-- Goal Actions -->
+              <div class="mb-2">
+                <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
+                  <h4 class="mt-4 text-lg font-semibold">Update Current Episode</h4>
+                  <div>
+                    <label for="currentSeason">Season:</label>
+                    <input type="number" id="currentSeason" v-model="goalToUpdate.season" min="1" class="border rounded py-1 px-2" required />
+                  </div>
+                  <div>
+                    <label for="currentEpisode">Episode:</label>
+                    <input type="number" id="currentEpisode" v-model="goalToUpdate.episode" min="1" class="border rounded py-1 px-2" required />
+                  </div>
+                  <button @click="updateGoal(goalToUpdate)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save
+                  </button>
+                  <button @click="cancelUpdate" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+                <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
+              </div>
             </div>
           </div>
-        </div>
-        <div v-else class="text-center mt-4">
-          <p>No goals found in this category.</p>
-        </div>
+          <div v-else class="text-center mt-4">
+            <p>No group goals found in this category.</p>
+          </div>
+         </div>
+        <!-- Display Completed Goals -->
+         <div class="py-4">
+          <h3 class="text-lg font-semibold mb-2">Completed Goals</h3>
+          <div v-if="completedGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
+            <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
+              <!-- Goal Content -->
+              <div class="flex-grow">
+                <p class="text-lg font-semibold">{{ goal.title }}</p>
+                <p>{{ goal.description }}</p>
+                <p>Category: {{ goal.category }}</p>
+                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
+                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+                <p>Status: Completed</p>
+              </div>
+              <!-- Goal Actions -->
+              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center mt-4">
+            <p>No completed goals found in this category.</p>
+          </div>
+         </div>
       </div>
+
     </section>
   </div>
   <div v-else class="text-center mt-10">
@@ -203,27 +278,41 @@ export default {
       'Music', 'Photography', 'Travel', 'Other'
     ];
 
+    const goalTypes = [
+      'Personal', 'Group', 'Completed'
+    ];
+
     // Selected category state
     const selectedCategory = ref(goalCategories[0]); // Default to the first category
 
     // Fetch user's personal goals
-    const personalGoals = computed(() => goals.value.filter(goal => !goal.is_group_goal && !goal.completed && goal.user_id === userId.value));
+    const personalGoalsByCategory = computed(() => 
+      goals.value.filter(goal => 
+        !goal.is_group_goal && 
+        goal.category === selectedCategory.value && 
+        !goal.completed && 
+        goal.user_id === userId.value
+      )
+    );
 
     // Fetch user's group goals (user must be part of the group)
-    const groupGoals = computed(() => {
-      return goals.value.filter(goal => {
-        return goal.is_group_goal && !goal.completed && userGroups.value.some(group => group.id === goal.group_id);
-      });
-    });
+    const groupGoalsByCategory = computed(() => 
+      goals.value.filter(goal => 
+        goal.is_group_goal && 
+        goal.category === selectedCategory.value && 
+        !goal.completed && 
+        userGroups.value.some(group => group.id === goal.group_id)
+      )
+    );
 
     // Fetch completed goals (either the user's goals or goals from their groups)
-    const completedGoals = computed(() => {
-      return goals.value.filter(goal => {
-        const isGroupGoal = goal.is_group_goal && userGroups.value.some(group => group.id === goal.group_id);
-        const isPersonalGoal = !goal.is_group_goal && goal.user_id === userId.value;
-        return goal.completed && (isGroupGoal || isPersonalGoal);
-      });
-    });
+    const completedGoalsByCategory = computed(() => 
+      goals.value.filter(goal => 
+        goal.category === selectedCategory.value && 
+        goal.completed && 
+        (userGroups.value.some(group => group.id === goal.group_id) || goal.user_id === userId.value)
+      )
+    );
 
     // Computed property to filter goals based on selected category
     const filteredGoals = computed(() => {
@@ -396,9 +485,9 @@ export default {
       season,
       episode,
       goalToUpdate,
-      personalGoals,
-      groupGoals,
-      completedGoals,
+      personalGoalsByCategory,
+      groupGoalsByCategory,
+      completedGoalsByCategory,
       isAuthenticated,
       showForm,
       showPersonalGoals,
@@ -411,6 +500,7 @@ export default {
       showUpdateForm,
       cancelUpdate,
       goalCategories,
+      goalTypes,
       selectedCategory,
       filteredGoals,
       selectCategory, // Expose the selectCategory method

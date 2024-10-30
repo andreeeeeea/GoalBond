@@ -1,6 +1,6 @@
 <template>
   <header class="bg-white shadow">
-    <div class="container mx-auto flex justify-between items-center p-4">
+    <div class="container mx-auto flex justify-between items-center p-2">
       <!-- App name -->
       <router-link to="/" class="text-2xl font-bold text-gray-800 hover:text-indigo-600 transition-colors duration-300">
         GoalBond

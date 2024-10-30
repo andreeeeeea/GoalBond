@@ -1,6 +1,6 @@
 <template>
   <div class="home-view relative flex flex-col items-center justify-center">
-    <section class="relative z-10 flex flex-col justify-center items-center w-full space-y-6 text-center py-36">
+    <section class="relative z-10 flex flex-col justify-center items-center w-full space-y-6 text-center py-28">
       <div class="text-5xl my-1 typing-text">
         <span class="caveat-font text-gray-800">I want to... </span>
         <span class="caveat-font text-gray-800">{{ currentText }}</span>
