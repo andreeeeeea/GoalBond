@@ -45,6 +45,7 @@ def load_user(user_id):
 def signup():
     data = request.get_json()
     username = data.get('username')
+    nickname = data.get('nickname') or username  # Default nickname to username if not provided
     email = data.get('email')
     password = data.get('password')
 
@@ -54,7 +55,8 @@ def signup():
     if User.query.filter_by(username=username).first():
         return jsonify({'message': 'User already exists'}), 400
 
-    new_user = User(username=username, email=email)
+    # Create new user
+    new_user = User(username=username, email=email, nickname=nickname)  # Include nickname here
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
@@ -82,10 +84,20 @@ def login():
             "user": {
                 "id": user.id,
                 "username": user.username,
-                "email": user.email
+                "email": user.email,
+                "nickname": user.nickname
             }
         }), 200
     return jsonify({"message": "Invalid username or password"}), 401
+
+# User Deletion
+@app.route('/delete-user', methods=['DELETE'])
+@login_required
+def delete_user():
+    user = current_user
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted successfully!'}), 200
 
 # Add a new route to check authentication status
 @app.route('/check-auth', methods=['GET'])
@@ -96,7 +108,8 @@ def check_auth():
             "user": {
                 "id": current_user.id,
                 "username": current_user.username,
-                "email": current_user.email
+                "email": current_user.email,
+                "nickname": current_user.nickname
             }
         }), 200
     else:
@@ -233,7 +246,7 @@ def create_group():
     if not name:
         return jsonify({'message': 'Group name is required'}), 400
 
-    new_group = Group(name=name, description=description, is_public=is_public)  # Add is_public here
+    new_group = Group(name=name, description=description, is_public=is_public, owner=current_user) 
     db.session.add(new_group)
     db.session.commit()
 

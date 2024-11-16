@@ -134,11 +134,6 @@
       {{ errorMessage }}
     </div>
   </div>
-  
-  <div v-else class="text-center mt-10">
-      <p>You must be logged in to access groups.</p>
-      <router-link to="/login" class="text-blue-500">Log In</router-link>
-  </div>
 </template>
 
 <script>
@@ -248,15 +243,25 @@ export default {
       });
     },
     searchGroups() {
-      axios.get(`http://localhost:5000/groups/search?query=${this.searchQuery}`)
-        .then(response => {
-          this.availableGroups = response.data;
-          this.currentView = 'joinGroups';
-        })
-        .catch(error => {
-          this.errorMessage = 'An error occurred while searching for groups.';
-          console.error('Error searching groups:', error);
+      if(this.searchQuery.trim() === '') {
+        axios.get('http://localhost:5000/groups/not-mine')
+          .then(response => {
+            this.availableGroups = response.data;
+          })
+          .catch(error => {
+            console.error('Error searching groups:', error);
         });
+      } else {
+          axios.get(`http://localhost:5000/groups/search?query=${this.searchQuery}`)
+          .then(response => {
+            this.availableGroups = response.data;
+            this.currentView = 'joinGroups';
+          })
+          .catch(error => {
+            this.errorMessage = 'An error occurred while searching for groups.';
+            console.error('Error searching groups:', error);
+          });
+      }
     }
   },
 };

@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):  # Inherit from UserMixin
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)  # VARCHAR(64)
     email = db.Column(db.String(128), unique=True, nullable=False)     # VARCHAR(128)
+    nickname = db.Column(db.String(64), nullable=False)
     password = db.Column(db.String(512), nullable=False)
 
     # Update the relationship to use back_populates
@@ -74,6 +75,7 @@ class Group(db.Model):
         __tablename__ = 'groups'
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100), nullable=False)
+        owner = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         description = db.Column(db.Text, nullable=True)
         is_public = db.Column(db.Boolean, default=False)  # Public groups can be seen by other users, private groups require invitation
 

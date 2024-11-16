@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.tab {
+    @apply text-lg font-semibold cursor-pointer py-2 px-4 transition-all ease-in-out;
+    position: relative; /* Ensure the border works as expected */
+  }
+  
+.tab:hover {
+    @apply text-gray-900;
+  }
+  
+.tab.active {
+    @apply text-gray-900;
+    border-bottom: 2px solid rgb(31, 41, 55) !important; /* Active tab's underline color */
+    opacity: 1; /* Fully visible when active */
+    }
+
+.tab:not(.active) {
+    opacity: 0.5; /* Fade out effect when inactive */
+  }

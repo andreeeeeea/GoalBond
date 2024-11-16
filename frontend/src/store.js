@@ -19,7 +19,6 @@ export default createStore({
     async login({ commit }, credentials) {
       try {
         const response = await axios.post('/login', credentials);
-        // Ensure response data contains user with email
         commit('SET_USER', response.data.user);
         return response;
       } catch (error) {
@@ -52,6 +51,8 @@ export default createStore({
   getters: {
     isAuthenticated: state => state.isAuthenticated,
     getUsername: state => (state.user ? state.user.username : ''),
-    getEmail: state => (state.user ? state.user.email : '') // Add a getter for email
+    getEmail: state => (state.user ? state.user.email : ''), // Add a getter for email
+    getNickname: state => (state.user ? state.user.nickname : ''),
+    currentUser: state => state.user
   }
 });
