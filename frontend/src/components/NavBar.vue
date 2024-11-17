@@ -34,13 +34,6 @@
           </button>
           <button
             v-if="isAuthenticated"
-            @click="goToGroups"
-            class="text-xl text-gray-600 px-4 py-2 rounded transition duration-300"
-          >
-            Groups
-          </button>
-          <button
-            v-if="isAuthenticated"
             @click="goToAccount"
             class="text-xl text-gray-600  px-4 py-2 rounded transition duration-300"
           >

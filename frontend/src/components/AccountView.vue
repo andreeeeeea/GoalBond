@@ -10,7 +10,7 @@
         />
         <div class="flex flex-col ml-4 sm:ml-8">
           <span class="text-2xl sm:text-4xl font-bold">{{ nickname }}</span>
-          <span class="text-xl sm:text-2xl">{{ "@" + username }}</span>
+          <span class="text-xl sm:text-2xl">{{ username }}</span>
         </div>
       </div>
     </div>
@@ -51,23 +51,103 @@
       <!-- Account Section -->
       <div v-if="currentView === 'account'" class="flex flex-col space-y-4">
         <h2 class="text-2xl font-bold mb-5">Account Information</h2>
-        <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
-        <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
-        <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
 
-        <!-- Logout and Edit Buttons -->
-        <div class="flex flex-wrap gap-4 mt-5">
-          <button
-            @click="logout"
-            class="text-white w-full sm:w-40 bg-red-600 hover:bg-red-700 px-4 py-2 rounded mt-2"
-          >
-            Logout
-          </button>
-          <button
-            class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
-          >
-            Edit Account
-          </button>
+        <div v-if="editing">
+          <div>
+            <label for="nickname" class="block text-lg">Nickname</label>
+            <input
+              v-model="form.nickname"
+              id="nickname"
+              type="text"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label for="username" class="block text-lg">Username</label>
+            <input
+              v-model="form.username"
+              id="username"
+              type="text"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label for="email" class="block text-lg">Email</label>
+            <input
+              v-model="form.email"
+              id="email"
+              type="email"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label for="oldPassword" class="block text-lg">Old Password</label>
+            <input
+              v-model="form.oldPassword"
+              id="oldPassword"
+              type="password"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label for="newPassword" class="block text-lg">New Password</label>
+            <input
+              v-model="form.newPassword"
+              id="newPassword"
+              type="password"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label for="confirmPassword" class="block text-lg">Confirm New Password</label>
+            <input
+              v-model="form.confirmPassword"
+              id="confirmPassword"
+              type="password"
+              class="border border-gray-300 rounded-lg p-2 w-full"
+            />
+          </div>
+
+          <div class="flex flex-wrap gap-4 mt-5">
+            <button
+              @click="updateAccount"
+              class="text-white w-full sm:w-40 bg-green-600 hover:bg-green-700 px-4 py-2 rounded mt-2"
+            >
+              Save Changes
+            </button>
+            <button
+              @click="cancelEdit"
+              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <div v-else>
+          <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
+          <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
+          <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
+
+          <div class="flex flex-wrap gap-4 mt-5">
+            <button
+              @click="logout"
+              class="text-white w-full sm:w-40 bg-red-600 hover:bg-red-700 px-4 py-2 rounded mt-2"
+            >
+              Logout
+            </button>
+            <button
+              @click="startEdit"
+              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
+            >
+              Edit Account
+            </button>
+          </div>
         </div>
       </div>
 
@@ -117,7 +197,7 @@
       </div>
 
       <!-- Create Group Section -->
-      <div v-if="currentView === 'createGroup'" class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <div v-if="currentView === 'createGroup'" class="max-w-md">
         <h2 class="text-2xl font-semibold mb-4">Create a Group</h2>
         <form @submit.prevent="createGroup">
           <input
@@ -200,6 +280,15 @@ export default {
       successMessage: '',
       errorMessage: '',
       searchQuery: '',
+      form: {
+        nickname: this.getNickname,
+        username: this.getUsername,
+        email: this.getEmail,
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      },
+      editing: false,
     };
   },
   mounted() {
@@ -211,14 +300,77 @@ export default {
       this.currentView = view;
       if (view === 'joinGroups') this.fetchAvailableGroups();
     },
-    getButtonClass(view) {
-      return `py-2 px-4 rounded ${this.currentView === view ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`;
-    },
     getTabClass(view) {
     return this.currentView === view
       ? 'tab active'
       : 'tab text-gray-600'; // Default state for non-active tabs
-  },
+    },
+    startEdit() {
+      this.editing = true; // Start editing mode
+    },
+    cancelEdit() {
+      this.editing = false; // Cancel editing
+    },
+    async updateAccount() {
+      try {
+        const updatedFields = {};
+
+        // Log the request data to inspect it
+        console.log('Form data being sent:', this.form);
+
+        // Check if the old password is provided
+        if (this.form.oldPassword) {
+          const passwordMatchResponse = await axios.post('/check-password', {
+            password: this.form.oldPassword  // This should be sent as 'password'
+          });
+
+          // Check the response to see if the old password is correct
+          console.log('Password check response:', passwordMatchResponse);
+
+          // If the password is incorrect, show an error
+          if (passwordMatchResponse.status !== 200) {
+            this.errorMessage = 'Old password is incorrect.';
+            this.successMessage = '';
+            return;
+          }
+        }
+
+        // Proceed with other checks for password and form fields
+        if (this.form.newPassword !== this.form.confirmPassword) {
+          this.errorMessage = 'New password and confirm password do not match.';
+          this.successMessage = '';
+          return;
+        }
+
+        // Other form update fields (username, email, etc.)
+        if (this.form.nickname !== this.getNickname) {
+          updatedFields.nickname = this.form.nickname;
+        }
+        if (this.form.username !== this.getUsername) {
+          updatedFields.username = this.form.username;
+        }
+        if (this.form.email !== this.getEmail) {
+          updatedFields.email = this.form.email;
+        }
+        if (this.form.newPassword) {
+          updatedFields.password = this.form.newPassword;
+        }
+
+        console.log('Fields being updated:', updatedFields);
+
+        // Send the update request
+        const response = await axios.put('/update-user', updatedFields);
+        console.log('Account update response:', response);
+        
+        this.successMessage = response.data.message;
+        this.errorMessage = '';
+        this.editing = false;  // Exit edit mode
+      } catch (error) {
+        console.error('Error updating account:', error);  // Log the error to inspect it
+        this.errorMessage = error.response?.data?.message || 'An error occurred while updating the account';
+        this.successMessage = '';
+      }
+    },
     async fetchUserGroups() {
       try {
         const response = await axios.get('/groups/mine');

@@ -43,7 +43,7 @@
     </section>
 
     <div class="screenshot-placeholder flex justify-center items-center pb-28">
-      <div class="relative w-7/12">
+      <div class="relative w-5/12">
         <img 
           src="https://images.unsplash.com/photo-1553649033-3fbc8d0fa3cb?ixlib=rb-4.0.3" 
           alt="Screenshot of Goals Page" 

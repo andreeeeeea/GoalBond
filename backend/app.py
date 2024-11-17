@@ -122,6 +122,55 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logout successful!'}), 200
 
+# User Update
+@app.route('/update-user', methods=['PUT'])
+@login_required
+def update_user():
+    data = request.get_json()
+    
+    username = data.get('username', current_user.username)  
+    nickname = data.get('nickname', current_user.nickname)
+    email = data.get('email', current_user.email)
+    password = data.get('password')
+
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+    
+    ##if password and len(password) < 8:  
+       ##return jsonify({'message': 'Password should be at least 8 characters long'}), 400
+
+    current_user.username = username
+    current_user.nickname = nickname
+    current_user.email = email
+
+    if password:
+        current_user.set_password(password)  
+
+    db.session.commit()
+    
+    return jsonify({'message': 'User updated successfully!'}), 200
+
+# Check Password
+@app.route('/check-password', methods=['POST'])
+@login_required
+def check_password():
+    data = request.get_json()
+    password = data.get('password').strip() 
+
+    if not password:
+        return jsonify({'message': 'Password is required'}), 400
+
+    print(f"Received password: {password}")
+    print(f"Stored password hash: {current_user.password}")
+    print(f"{current_user.check_password(password)}")
+
+    if not current_user.check_password(password):
+        return jsonify({'message': 'Password is incorrect'}), 401
+
+    return jsonify({'message': 'Password is correct'}), 200
+
+
+
 # Create a Goal
 @app.route('/goals', methods=['POST'])
 @login_required
@@ -246,7 +295,13 @@ def create_group():
     if not name:
         return jsonify({'message': 'Group name is required'}), 400
 
-    new_group = Group(name=name, description=description, is_public=is_public, owner=current_user) 
+    # Use current_user.id for the owner field
+    new_group = Group(
+        name=name,
+        description=description,
+        is_public=is_public,
+        owner=current_user.id  # Pass the ID, not the proxy object
+    )
     db.session.add(new_group)
     db.session.commit()
 
@@ -254,7 +309,15 @@ def create_group():
     new_group.members.append(current_user)
     db.session.commit()
 
-    return jsonify({'message': 'Group created successfully!', 'group': {'id': new_group.id, 'name': new_group.name,'is_public': new_group.is_public}}), 201
+    return jsonify({
+        'message': 'Group created successfully!',
+        'group': {
+            'id': new_group.id,
+            'name': new_group.name,
+            'is_public': new_group.is_public
+        }
+    }), 201
+
 
 # Join a Group
 @app.route('/groups/join/<int:group_id>', methods=['POST'])

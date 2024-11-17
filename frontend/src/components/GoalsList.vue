@@ -11,7 +11,7 @@
         <div class="text-left mt-5">
           <button
             @click="showForm = !showForm"
-            class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300"
+            class="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition duration-300"
           >
             {{ showForm ? 'Cancel' : 'Add Goal' }}
           </button>
