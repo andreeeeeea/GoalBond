@@ -31,13 +31,13 @@
           @click="goToGoals"
           class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
         >
-          Check Goals
+          My Goals
         </button>
         <button
           @click="goToGroups"
           class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
         >
-          Check Groups
+          My Account
         </button>
       </div>
     </section>
@@ -118,11 +118,6 @@
             class="w-full mx-auto rounded-lg bg-white shadow-lg px-5 pt-5 pb-10 text-gray-800 transition-transform duration-300 transform hover:scale-105"
             style="max-width: 500px;"
           >
-            <div class="w-full pt-1 pb-5">
-              <div class="overflow-hidden rounded-full w-20 h-20 -mt-16 mx-auto shadow-lg">
-                <img :src="testimonial.image" alt="" class="w-full h-full object-cover" />
-              </div>
-            </div>
             <div class="w-full mb-10 text-center">
               <div class="text-3xl text-indigo-500 text-left leading-tight h-3">“</div>
               <p class="text-sm text-gray-600 px-5">{{ testimonial.quote }}</p>
@@ -170,57 +165,24 @@ export default {
       {
         quote: "GoalBond helped me achieve my travel goals! I finally visited Paris!",
         author: "Sarah T.",
-        image: "https://randomuser.me/api/portraits/women/15.jpg"
+        username: "sarah123",
       },
       {
         quote: "The collaborative features made planning with friends so easy and fun!",
-        author: "John D.",
-        image: "https://randomuser.me/api/portraits/men/15.jpg"
+        author: "John Lawson",
+        username: "johnlawson",
       },
       {
         quote: "I was able to finally complete my bucket list thanks to GoalBond!",
         author: "Emily W.",
-        image: "https://randomuser.me/api/portraits/women/16.jpg"
+        username: "emilyWatts",
       },
       {
         quote: "GoalBond is a great tool for keeping track of goals and progress. I love it!",
         author: "David M.",
-        image: "https://randomuser.me/api/portraits/men/16.jpg"
+        username: "davidMoritz",
       }
     ];
-
-    const slides = [
-      {
-        image: "https://images.unsplash.com/photo-1725582205921-7d681ebca2a7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        alt: "Habit Tracker",
-        text: "Build habits and achieve goals"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5b?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        alt: "Group Chat",
-        text: "Connect with friends and join groups"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1536010447069-d2c8af80c584?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        alt: "Progress Tracker",
-        text: "Track your progress and stay motivated"
-      }
-    ];
-
-    const currentSlide = ref(0);
-
-    const nextSlide = () => {
-      currentSlide.value = (currentSlide.value + 1) % slides.length;
-    };
-
-    const prevSlide = () => {
-      currentSlide.value = (currentSlide.value - 1 + slides.length) % slides.length;
-    };
-
-    // Auto-advance slides every 5 seconds
-    onMounted(() => {
-      setInterval(nextSlide, 5000);
-    });
 
     const goToSignUp = () => {
       router.push('/signup');
@@ -231,7 +193,7 @@ export default {
     };
 
     const goToGroups = () => {
-      router.push('/groups');
+      router.push('/account');
     };
 
     const typeText = () => {
@@ -265,7 +227,6 @@ export default {
       erase();
     };
 
-    // Start autoplay on mounted and stop on unmounted
     onMounted(typeText);
 
     return {
@@ -275,11 +236,7 @@ export default {
       goToGoals,
       goToGroups,
       testimonials,
-      currentText,
-      slides,
-      currentSlide,
-      nextSlide,
-      prevSlide,
+      currentText
     };
   },
 };

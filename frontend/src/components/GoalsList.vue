@@ -138,10 +138,8 @@
               <div class="flex-grow">
                 <p class="text-lg font-semibold">{{ goal.title }}</p>
                 <p>{{ goal.description }}</p>
-                <p>Category: {{ goal.category }}</p>
                 <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
                 <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-                <p>Status: {{ goal.completed ? 'Completed' : 'Not Completed' }}</p>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -181,10 +179,8 @@
               <div class="flex-grow">
                 <p class="text-lg font-semibold">{{ goal.title }}</p>
                 <p>{{ goal.description }}</p>
-                <p>Category: {{ goal.category }}</p>
                 <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
                 <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-                <p>Status: {{ goal.completed ? 'Completed' : 'Not Completed' }}</p>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -224,10 +220,8 @@
               <div class="flex-grow">
                 <p class="text-lg font-semibold">{{ goal.title }}</p>
                 <p>{{ goal.description }}</p>
-                <p>Category: {{ goal.category }}</p>
                 <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
                 <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
-                <p>Status: {{ goal.completed ? 'Completed' : 'Not Completed' }}</p>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -249,9 +243,8 @@
                 </div>
               </div>
               <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="redoGoal(goal)">Re-Do Goal</button>
                 <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-                <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
               </div>
             </div>
           </div>
@@ -279,7 +272,6 @@ export default {
     const store = useStore();
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
 
-    // State to control form visibility and section toggles
     const showForm = ref(false);
     const showPersonalGoals = ref(true);
     const showGroupGoals = ref(false);
@@ -298,11 +290,11 @@ export default {
     const category = ref('');
     const season = ref('');
     const episode = ref('');
-    const goalToUpdate = ref(null); // New state for the goal to update
+    const goalToUpdate = ref(null); 
 
     // User-specific data
     const userGroups = ref([]);
-    const userId = ref(null);  // Fetch current user id
+    const userId = ref(null);  
 
     // Goals data
     const goals = ref([]);
@@ -319,7 +311,7 @@ export default {
     ];
 
     // Selected category state
-    const selectedCategory = ref(goalCategories[0]); // Default to the first category
+    const selectedCategory = ref(goalCategories[0]); 
 
     // Fetch user's personal goals
     const personalGoalsByCategory = computed(() => 
@@ -331,7 +323,7 @@ export default {
       )
     );
 
-    // Fetch user's group goals (user must be part of the group)
+    // Fetch user's group goals
     const groupGoalsByCategory = computed(() => 
       goals.value.filter(goal => 
         goal.is_group_goal && 
@@ -341,7 +333,7 @@ export default {
       )
     );
 
-    // Fetch completed goals (either the user's goals or goals from their groups)
+    // Fetch completed goals by category
     const completedGoalsByCategory = computed(() => 
       goals.value.filter(goal => 
         goal.category === selectedCategory.value && 
@@ -356,7 +348,7 @@ export default {
     });
 
     onMounted(async () => {
-      await fetchUserDetails();  // Fetch user details to get id and groups
+      await fetchUserDetails();  
       await fetchGoals();
       await fetchGroups();
     });
@@ -364,9 +356,9 @@ export default {
     // Fetch user details to get current user id and groups
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get('/user'); // Assuming you have a /user endpoint
+        const response = await axios.get('/user'); 
         userId.value = response.data.id;
-        userGroups.value = response.data.groups;  // Get groups the user belongs to
+        userGroups.value = response.data.groups; 
       } catch (error) {
         console.error('Error fetching user details:', error);
       }
@@ -477,34 +469,51 @@ export default {
 
     const updateGoal = async (goal) => {
       try {
-        // Update the goal in the backend
         await axios.put(`/goals/${goal.id}`, {
           season: goal.season,
           episode: goal.episode,
         });
         
-        // Refresh the goals after update
         await fetchGoals();
 
-        // Clear the goal to update
         goalToUpdate.value = null;
       } catch (error) {
         console.error("Error updating goal:", error);
       }
     };
 
+    const redoGoal = async (goal) => {
+      const newGoal = {
+        title: goal.title,
+        description: goal.description,
+        hasDeadline: goal.hasDeadline,
+        deadline: goal.deadline,
+        is_group_goal: goal.is_group_goal,
+        group_id: goal.group_id,
+        category: goal.category,
+        season: goal.season,
+        episode: goal.episode,
+      };
+      try {
+        const response = await axios.post('/goals', newGoal);
+        goals.value.push(response.data);
+        await fetchGoals();
+      } catch (error) {
+        console.error("Error redoing goal:", error);
+      }
+    };
+      
     const showUpdateForm = (goal) => {
-      console.log('Showing update form for goal:', goal); // Log the goal
-      goalToUpdate.value = { ...goal }; // Clone the goal to prevent direct mutation
+      console.log('Showing update form for goal:', goal);
+      goalToUpdate.value = { ...goal }; 
     };
 
     const cancelUpdate = () => {
-      goalToUpdate.value = null; // Reset the update state
+      goalToUpdate.value = null; 
     };
 
-    // Method to select a category
     const selectCategory = (category) => {
-      selectedCategory.value = category; // Update the selected category
+      selectedCategory.value = category; 
     };
 
     return {
@@ -539,7 +548,8 @@ export default {
       goalTypes,
       selectedCategory,
       filteredGoals,
-      selectCategory, // Expose the selectCategory method
+      selectCategory, 
+      redoGoal
     };
   },
 };

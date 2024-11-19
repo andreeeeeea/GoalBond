@@ -5,6 +5,8 @@ import SignupView from '../components/SignUpForm.vue';
 import GoalsList from '@/components/GoalsList.vue';
 import GroupView from '@/components/GroupView.vue';
 import AccountView from '@/components/AccountView.vue';
+import ForgotPassword from '@/components/ForgotPassword.vue';
+import ResetPassword from '@/components/ResetPassword.vue';
 
 const routes = [
   {
@@ -39,6 +41,16 @@ const routes = [
     name: 'account',
     component: AccountView,
     meta: { requiresAuth: true }, // Protect this route
+  },
+  {
+    path: '/forgot_password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+  },
+  {
+    path: '/reset_password',
+    name: 'reset_password',
+    component: ResetPassword,
   }
 ];
 

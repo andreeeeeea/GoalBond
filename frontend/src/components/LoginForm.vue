@@ -13,6 +13,7 @@
       </form>
       <div class="my-4">
           <p class="text-center">Don't have an account? <router-link to="/signup" class="text-blue-500">Sign Up</router-link></p>
+          <p class="text-center">Forgot your password? <router-link to="/forgot_password" class="text-blue-500">Reset Password</router-link></p>
       </div>
     </div>
     <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
@@ -55,6 +56,5 @@
   
   
   <style scoped>
-  /* Add your styles here if needed */
   </style>
 

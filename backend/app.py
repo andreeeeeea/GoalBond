@@ -1,12 +1,15 @@
 import datetime
 from dotenv import load_dotenv
 import os
-
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask_cors import CORS
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from forms import ForgotPasswordForm
+
 
 # Import models
 from models import db, User, Goal, Group
@@ -16,7 +19,21 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['SECRET_KEY'] = 'BellaEOpisicaGrasa2000'  # Change this to a strong secret key
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+app.config['MAIL_PORT'] = 587                
+app.config['MAIL_USE_TLS'] = True            
+app.config['MAIL_USE_SSL'] = False            
+app.config['MAIL_USERNAME'] = 'goalbondbot@gmail.com' 
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  
+app.config['MAIL_DEFAULT_SENDER'] = 'goalbondbot@gmail.com'  
+
+mail = Mail(app)
+
+# Initialize the serializer
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Update CORS configuration to allow specific methods without preflight
 CORS(app, resources={r"/*": {
@@ -39,6 +56,29 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+##### User methods
+
+# Get User
+@app.route('/user')
+@login_required
+def get_user():
+    # Check if a user is logged in
+    if current_user.is_authenticated:
+        # Return user's details including groups
+        user_data = {
+            'id': current_user.id,
+            'username': current_user.username,
+            'email': current_user.email,
+            'groups': [
+                {'id': group.id, 'name': group.name}
+                for group in current_user.groups
+            ]
+        }
+        return jsonify(user_data), 200
+    else:
+        return jsonify({"error": "Unauthorized"}), 401    
 
 # User Signup
 @app.route('/signup', methods=['POST'])
@@ -69,7 +109,6 @@ def signup():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    print("Received login data:", data)  # For debugging, remove in production
     username = data.get('username')
     password = data.get('password')
 
@@ -91,15 +130,31 @@ def login():
     return jsonify({"message": "Invalid username or password"}), 401
 
 # User Deletion
-@app.route('/delete-user', methods=['DELETE'])
-@login_required
-def delete_user():
-    user = current_user
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'message': 'User deleted successfully!'}), 200
+from flask_login import login_required, current_user
 
-# Add a new route to check authentication status
+@app.route('/delete_account', methods=['DELETE'])
+@login_required
+def delete_account():
+    try:
+        user = User.query.get(current_user.id)
+
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+
+        db.session.delete(user)
+        db.session.commit()
+        print(f"User with ID {current_user.id} has been deleted.") 
+
+        logout_user()
+
+        return jsonify({'success': True, 'message': 'Your account has been deleted.'}), 200
+    except Exception as e:
+        print(f"Error deleting account: {str(e)}")
+        return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
+
+
+
+# Check Authentication
 @app.route('/check-auth', methods=['GET'])
 def check_auth():
     if current_user.is_authenticated:
@@ -169,7 +224,7 @@ def check_password():
 
     return jsonify({'message': 'Password is correct'}), 200
 
-
+##### Goal Methods
 
 # Create a Goal
 @app.route('/goals', methods=['POST'])
@@ -283,6 +338,8 @@ def delete_goal(goal_id):
 
     return jsonify({'message': 'Goal deleted successfully!'}), 200
 
+##### Group Methods
+
 # Create a Group
 @app.route('/groups', methods=['POST'])
 @login_required
@@ -358,11 +415,11 @@ def get_groups():
     return jsonify(result), 200
 
     
-# Get user's group   
+# Get User's Groups 
 @app.route('/groups/mine', methods=['GET'])
 @login_required
 def get_user_groups():
-    groups = current_user.groups  # Fetch only groups the user is part of
+    groups = current_user.groups 
 
     return jsonify([{
         'id': group.id,
@@ -372,7 +429,7 @@ def get_user_groups():
         'members': [{'id': member.id, 'username': member.username} for member in group.members]
     } for group in groups]), 200
     
-# Get group user isn't part of
+# Get Groups User Isn't Part Of
 @app.route('/groups/not-mine', methods=['GET'])
 @login_required
 def get_groups_not_mine():
@@ -380,9 +437,8 @@ def get_groups_not_mine():
     all_groups = Group.query.all()
 
     # Get user's groups
-    user_groups = set(group.id for group in current_user.groups)  # Create a set of group IDs the user is part of
+    user_groups = set(group.id for group in current_user.groups) 
 
-    # Filter groups to exclude those the user is a member of and private groups
     groups_not_mine = [
         {
             'id': group.id,
@@ -446,27 +502,97 @@ def search_groups():
 
     return jsonify(result), 200
 
+##### Others
+
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    try:
+        data = request.get_json()  # Get the request data from Vue.js
+        print(f"Received data: {data}")  # Debug: log incoming data
+
+        email = data.get('email')
+        if not email:
+            return jsonify({'success': False, 'message': 'Email is required'}), 400
+
+        print(f"Processing email: {email}")  # Debug: log the email being processed
+
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            # Generate password reset token
+            token = serializer.dumps(email, salt='reset-password')
+            reset_link = url_for('reset_password', token=token, _external=True)
+            print(f"Generated reset link: {reset_link}")  # Debug: log the generated reset link
+
+            # Send reset email
+            msg = Message('Password Reset Request', recipients=[email])
+            msg.body = f'Click the link to reset your password: {reset_link}'
+            mail.send(msg)
+
+            print(f"Password reset email sent to {email}")  # Debug: confirm email sent
+            return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
+
+        else:
+            print(f"No user found with email: {email}")  # Debug: log if no user is found
+            return jsonify({'success': False, 'message': 'No account found with that email address.'})
+
+    except Exception as e:
+        app.logger.error(f"Error in forgot_password route: {str(e)}")
+        print(f"Error in forgot_password: {str(e)}")  # Debug: log error message
+        return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
+       
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        if request.method == 'GET':
+            try:
+                email = serializer.loads(token, salt='reset-password', max_age=3600)
+            except (SignatureExpired, BadSignature) as e:
+                print(f"Error in token: {str(e)}") 
+                return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
+            
+            print(f"Decoded email from token: {email}") 
+
+            user = User.query.filter_by(email=email).first()
+
+            if not user:
+                print(f"No user found for the email {email} in reset_password route.") 
+                return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
+
+            return redirect("http://localhost:8080/reset_password?token=" + token)
+
+        elif request.method == 'POST':
+            try:
+                email = serializer.loads(token, salt='reset-password', max_age=3600)
+            except (SignatureExpired, BadSignature) as e:
+                print(f"Error in token: {str(e)}") 
+                return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
+            
+            print(f"Decoded email from token: {email}")  
+
+            user = User.query.filter_by(email=email).first()
+
+            if not user:
+                print(f"No user found for the email {email} in reset_password route.")  
+                return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
+
+            new_password = request.json.get('password')
+            if not new_password:
+                print("New password not provided.")
+                return jsonify({'success': False, 'message': 'New password is required.'}), 400
+
+            user.set_password(new_password)
+            db.session.commit()
+            print(f"Password for {email} has been updated.")  
+
+            return jsonify({'success': True, 'message': 'Your password has been updated!'}), 200
+
+    except Exception as e:
+        print(f"Error in reset_password: {str(e)}")  
+        return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
+
     
-@app.route('/user')
-@login_required
-def get_user():
-    # Check if a user is logged in
-    if current_user.is_authenticated:
-        # Return user's details including groups
-        user_data = {
-            'id': current_user.id,
-            'username': current_user.username,
-            'email': current_user.email,
-            'groups': [
-                {'id': group.id, 'name': group.name}
-                for group in current_user.groups
-            ]
-        }
-        return jsonify(user_data), 200
-    else:
-        return jsonify({"error": "Unauthorized"}), 401
-
-
+    
 # Run the application
 if __name__ == '__main__':
     app.run(debug=True)
