@@ -7,6 +7,9 @@ import GroupView from '@/components/GroupView.vue';
 import AccountView from '@/components/AccountView.vue';
 import ForgotPassword from '@/components/ForgotPassword.vue';
 import ResetPassword from '@/components/ResetPassword.vue';
+import ContactView from '@/components/ContactView.vue';
+import TermsView from '@/components/TermsView.vue';
+import PrivacyView from '@/components/PrivacyView.vue';
 
 const routes = [
   {
@@ -51,7 +54,27 @@ const routes = [
     path: '/reset_password',
     name: 'reset_password',
     component: ResetPassword,
-  }
+  },
+  {
+    path: '/group/:groupId/owner',
+    name: 'group_owner',
+    props: true
+  },
+  {
+    path: '/contact',
+    name: 'contact',
+    component: ContactView
+  },
+  {
+    path: '/terms',
+    name: 'terms',
+    component: TermsView
+  },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: PrivacyView,
+  },
 ];
 
 const router = createRouter({

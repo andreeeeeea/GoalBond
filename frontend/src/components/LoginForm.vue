@@ -1,6 +1,6 @@
 <template>
   <div class="items-center justify-center py-12 px-4">
-    <div class="w-96 mx-auto py-32">
+    <div class="w-96 mx-auto pt-32">
       <h1 class="text-2xl font-bold text-center">Login</h1>
       <form @submit.prevent="handleLogin" class="mt-10">
         <div class="mb-4">
@@ -16,7 +16,9 @@
           <p class="text-center">Forgot your password? <router-link to="/forgot_password" class="text-blue-500">Reset Password</router-link></p>
       </div>
     </div>
-    <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+    <div class="flex justify-center">
+      <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+    </div>
   </div>
 </template>
 

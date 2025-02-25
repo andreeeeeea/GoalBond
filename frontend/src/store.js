@@ -13,6 +13,7 @@ export default createStore({
     SET_USER(state, user) {
       state.user = user;
       state.isAuthenticated = !!user;  // Set authentication status
+      console.log('Setting isAuthenticated to:', state.isAuthenticated);
     }
   },
   actions: {

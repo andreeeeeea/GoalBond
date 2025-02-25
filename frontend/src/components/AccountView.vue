@@ -1,22 +1,5 @@
 <template>
   <div class="bg-white shadow-xl rounded-xl w-full sm:w-4/5 md:w-3/4 lg:w-1/2 min-h-96 max-h-auto mx-auto p-5 sm:p-10 md:p-16 my-10 sm:my-16">
-    <div class="container mx-auto">
-      <div class="flex items-center mb-8 sm:mb-11">
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100px" height="100px" viewBox="0 0 20 20" version="1.1">
-          <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-140.000000, -2159.000000)" fill="#000000">
-                  <g id="icons" transform="translate(56.000000, 160.000000)">
-                      <path d="M100.562548,2016.99998 L87.4381713,2016.99998 C86.7317804,2016.99998 86.2101535,2016.30298 86.4765813,2015.66198 C87.7127655,2012.69798 90.6169306,2010.99998 93.9998492,2010.99998 C97.3837885,2010.99998 100.287954,2012.69798 101.524138,2015.66198 C101.790566,2016.30298 101.268939,2016.99998 100.562548,2016.99998 M89.9166645,2004.99998 C89.9166645,2002.79398 91.7489936,2000.99998 93.9998492,2000.99998 C96.2517256,2000.99998 98.0830339,2002.79398 98.0830339,2004.99998 C98.0830339,2007.20598 96.2517256,2008.99998 93.9998492,2008.99998 C91.7489936,2008.99998 89.9166645,2007.20598 89.9166645,2004.99998 M103.955674,2016.63598 C103.213556,2013.27698 100.892265,2010.79798 97.837022,2009.67298 C99.4560048,2008.39598 100.400241,2006.33098 100.053171,2004.06998 C99.6509769,2001.44698 97.4235996,1999.34798 94.7348224,1999.04198 C91.0232075,1998.61898 87.8750721,2001.44898 87.8750721,2004.99998 C87.8750721,2006.88998 88.7692896,2008.57398 90.1636971,2009.67298 C87.1074334,2010.79798 84.7871636,2013.27698 84.044024,2016.63598 C83.7745338,2017.85698 84.7789973,2018.99998 86.0539717,2018.99998 L101.945727,2018.99998 C103.221722,2018.99998 104.226185,2017.85698 103.955674,2016.63598" id="profile_round-[#1342]"></path>
-                  </g>
-              </g>
-          </g>
-      </svg>
-        <div class="flex flex-col ml-4 sm:ml-8">
-          <span class="text-2xl sm:text-4xl font-bold">{{ nickname }}</span>
-          <span class="text-xl sm:text-2xl">{{ username }}</span>
-        </div>
-      </div>
-    </div>
 
     <div class="container mx-auto">
       <!-- Tab Navigation -->
@@ -53,8 +36,7 @@
 
       <!-- Account Section -->
       <div v-if="currentView === 'account'" class="flex flex-col space-y-4">
-        <h2 class="text-2xl font-bold mb-5">Account Information</h2>
-
+        <h2 class="text-2xl font-semibold mb-4">Account Information</h2>
         <div v-if="editing">
           <div>
             <label for="nickname" class="block text-lg">Nickname</label>
@@ -169,15 +151,28 @@
         <h2 class="text-2xl font-semibold mb-4">My Groups</h2>
         <ul v-if="groups.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <li v-for="group in groups" :key="group.id" class="bg-white rounded-lg border-solid border-2  p-4">
-            <div class="block text-xl text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong> {{ group.description }}</div>
-            <div class="block text-xl text-gray-700">{{ group.members.length }} members.</div>
-            <div class="block text-xl text-gray-700"> {{ group.description }}</div>
-            <button
-              @click="leaveGroup(group.id)"
-              class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
-            >
-              Leave Group
-            </button>
+            <div class="flex flex-col justify-between h-full">
+              <div>
+                <div class="block text-md text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong></div>
+                <div class="block text-md text-gray-700"><strong>Owner</strong>: {{ group.owner.username }}</div>
+                <div class="block text-md text-gray-700">{{ group.members.length }} members.</div>
+                <div v-if="group.description" class="block text-md text-gray-700">"{{ group.description }}"</div>
+              </div>
+              <button
+                @click="leaveGroup(group.id)"
+                class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
+              >
+                Leave Group
+              </button>
+              <div v-if="group.owner.id === currentUser.id">
+                <button
+                  @click="deleteGroup(group.id)"
+                  class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
+                >
+                  Delete Group
+                </button>
+              </div>
+            </div>
           </li>
         </ul>
         <p v-else>No groups available yet.</p>
@@ -197,15 +192,28 @@
         </button>
         <ul v-if="availableGroups.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
           <li v-for="group in availableGroups" :key="group.id" class="bg-white rounded-lg shadow p-4">
-            <div class="block text-xl text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong> {{ group.description }}</div>
-            <div class="block text-xl text-gray-700">{{ group.members.length }} members.</div>
-            <div class="block text-xl text-gray-700"> {{ group.description }}</div>
-            <button
-              @click="joinGroup(group.id)"
-              class="mt-2 bg-green-600 text-white py-1 px-4 rounded"
-            >
-              Join
-            </button>
+            <div class="flex flex-col justify-between h-full">
+              <div>
+                <div class="block text-md text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong></div>
+                <div class="block text-md text-gray-700"><strong>Owner</strong>: {{ group.owner.username }}</div>
+                <div class="block text-md text-gray-700">{{ group.members.length }} members.</div>
+                <div v-if="group.description" class="block text-md text-gray-700">"{{ group.description }}"</div>
+              </div>
+              <button
+                v-if="group.members.find(member => member.id === currentUser.id)"
+                @click="leaveGroup(group.id)"
+                class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
+              >
+                Leave
+              </button>
+              <button
+                v-else
+                @click="joinGroup(group.id)"
+                class="mt-4 bg-green-600 text-white py-1 px-4 rounded hover:bg-green-500"
+              >
+                Join
+              </button>
+            </div>
           </li>
         </ul>
         <p v-else>No groups available yet.</p>
@@ -239,8 +247,7 @@
       </div>
 
       <!-- Success and Error Messages -->
-      <div v-if="successMessage" class="text-green-500 text-center mt-4">{{ successMessage }}</div>
-      <div v-if="errorMessage" class="text-red-500 text-center mt-4">{{ errorMessage }}</div>
+      <p v-if="message" :class="messageClass" class="mt-2 text-center block text-md"><strong> {{ message }} </strong></p>
     </div>
   </div>
 </template>
@@ -287,13 +294,14 @@ export default {
     return {
       currentView: 'account',
       groups: [],
+      owner: '',
       availableGroups: [],
       name: '',
       description: '',
       isPublic: true,
       publicGroups: [],
-      successMessage: '',
-      errorMessage: '',
+      message: '',
+      messageClass: '',
       searchQuery: '',
       form: {
         nickname: this.getNickname,
@@ -311,6 +319,15 @@ export default {
     this.fetchPublicGroups();
   },
   methods: {
+    setMessage(message, type) {
+      this.message = message;
+      this.messageClass = type;
+
+      setTimeout(() => {
+        this.message = '';
+      }, 3000);
+    },
+    
     setView(view) {
       this.currentView = view;
       if (view === 'joinGroups') this.fetchAvailableGroups();
@@ -318,13 +335,13 @@ export default {
     getTabClass(view) {
     return this.currentView === view
       ? 'tab active'
-      : 'tab text-gray-600'; // Default state for non-active tabs
+      : 'tab text-gray-600'; 
     },
     startEdit() {
-      this.editing = true; // Start editing mode
+      this.editing = true; 
     },
     cancelEdit() {
-      this.editing = false; // Cancel editing
+      this.editing = false; 
     },
     async updateAccount() {
       try {
@@ -344,16 +361,14 @@ export default {
 
           // If the password is incorrect, show an error
           if (passwordMatchResponse.status !== 200) {
-            this.errorMessage = 'Old password is incorrect.';
-            this.successMessage = '';
+            this.setMessage('Old password is incorrect.', 'error');
             return;
           }
         }
 
         // Proceed with other checks for password and form fields
         if (this.form.newPassword !== this.form.confirmPassword) {
-          this.errorMessage = 'New password and confirm password do not match.';
-          this.successMessage = '';
+          this.setMessage('New password and confirm password do not match.', 'error');
           return;
         }
 
@@ -376,14 +391,12 @@ export default {
         // Send the update request
         const response = await axios.put('/update-user', updatedFields);
         console.log('Account update response:', response);
-        
-        this.successMessage = response.data.message;
-        this.errorMessage = '';
+
+        this.setMessage(response.data.message, 'success');
         this.editing = false;  // Exit edit mode
       } catch (error) {
-        console.error('Error updating account:', error);  // Log the error to inspect it
-        this.errorMessage = error.response?.data?.message || 'An error occurred while updating the account';
-        this.successMessage = '';
+        console.error('Error updating account:', error); 
+        this.setMessage(error.response?.data?.message || 'An error occurred while updating the account', 'error');
       }
     },
     async deleteAccount() {
@@ -394,11 +407,11 @@ export default {
             alert(response.data.message); 
             window.location.href = "/";  
           } else {
-            alert(response.data.message); 
+            this.setMessage(response.data.message, 'error');
           }
         } catch (error) {
           console.error("Error deleting account:", error);
-          alert("Failed to delete account. Please try again.");
+          this.setMessage('Failed to delete account. Please try again.', 'error');
         }
       }
     },
@@ -428,45 +441,62 @@ export default {
         console.error('Error fetching available groups:', error);
       }
     },
+    async createGroup() {
+      try {
+        await axios.post('/groups', { name: this.name, description: this.description, is_public: this.isPublic });
+        this.setMessage('Group created successfully!', 'success');
+        this.name = '';
+        this.description = '';
+        this.isPublic = true;
+        this.fetchUserGroups();
+      } catch (error) {
+        this.setMessage('Error creating group.', 'error');
+      }
+    },
     async joinGroup(groupId) {
       try {
         await axios.post(`/groups/join/${groupId}`);
-        this.successMessage = 'Successfully joined the group!';
+        this.setMessage('You have joined the group!', 'success');
         this.fetchUserGroups();
         this.fetchAvailableGroups();
       } catch (error) {
-        this.errorMessage = 'Error joining group.';
+        this.setMessage('Error joining group.', 'error');
       }
     },
     async leaveGroup(groupId) {
       console.log("Group to leave", groupId);
       console.log("User that leaves", this.username);
       try {
-        await axios.post(`/groups/${groupId}/leave`);
-        this.successMessage = 'Successfully left the group!';
-        this.fetchUserGroups();
+        const response = await axios.post(`/groups/${groupId}/leave`);
+        
+        if (response.data.message.includes('the group has been deleted')){
+          this.setMessage(response.data.message, 'success');
+          this.groups = this.groups.filter(group => group.id !== groupId);
+        } else {
+          this.setMessage('You have left the group!', 'success');
+          this.groups.find(group => group.id === groupId).members = this.groups.find(group => group.id === groupId).members.filter(member => member.username !== this.username);
+        }
       } catch (error) {
-        this.errorMessage = 'Error leaving group.';
-      }
-    },
-    async createGroup() {
-      try {
-        await axios.post('/groups', { name: this.name, description: this.description, is_public: this.isPublic });
-        this.successMessage = 'Group created successfully!';
-        this.name = '';
-        this.description = '';
-        this.isPublic = true;
-        this.fetchUserGroups();
-      } catch (error) {
-        this.errorMessage = 'Error creating group.';
+        this.setMessage('Error leaving group.', 'error');
       }
     },
     async searchGroups() {
       try {
         const response = await axios.get(`/groups/search?query=${this.searchQuery}`);
+        console.log("Response from server:", response.data);
         this.availableGroups = response.data;
       } catch (error) {
-        this.errorMessage = 'Error searching groups.';
+        this.setMessage('Error searching groups.', 'error');
+      }
+    },
+    async deleteGroup(groupId) {
+      try {
+        await axios.delete(`/groups/${groupId}`);
+        this.setMessage('Group deleted successfully!', 'success');
+        this.fetchUserGroups();
+        this.fetchAvailableGroups();
+      } catch (error) {
+        this.setMessage('Error deleting group.', 'error');
       }
     },
   },
@@ -476,6 +506,12 @@ export default {
 <style scoped>
 .container {
   max-width: 800px;
+}
+.success {
+  color: green;
+}
+.error {
+  color: red;
 }
 </style>
 

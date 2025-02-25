@@ -9,6 +9,7 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from forms import ForgotPasswordForm
+from flask_migrate import Migrate
 
 
 # Import models
@@ -44,6 +45,7 @@ CORS(app, resources={r"/*": {
 }})
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
@@ -140,10 +142,14 @@ def delete_account():
 
         if not user:
             return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        goals = Goal.query.filter_by(user_id=current_user.id).all()
+        for goal in goals:
+            db.session.delete(goal) 
 
         db.session.delete(user)
         db.session.commit()
-        print(f"User with ID {current_user.id} has been deleted.") 
+        print(f"User with ID {current_user.id} and their associated goals have been deleted.")
 
         logout_user()
 
@@ -203,7 +209,7 @@ def update_user():
 
     db.session.commit()
     
-    return jsonify({'message': 'User updated successfully!'}), 200
+    return jsonify({'message': 'Details updated successfully!'}), 200
 
 # Check Password
 @app.route('/check-password', methods=['POST'])
@@ -357,7 +363,7 @@ def create_group():
         name=name,
         description=description,
         is_public=is_public,
-        owner=current_user.id  # Pass the ID, not the proxy object
+        owner=current_user.id 
     )
     db.session.add(new_group)
     db.session.commit()
@@ -409,6 +415,7 @@ def get_groups():
                 'name': group.name,
                 'description': group.description,
                 'is_public': group.is_public,
+                'owner' : { 'id': group.owner, 'username': User.query.get(group.owner).username },
                 'members': [{'id': user.id, 'username': user.username} for user in group.members]
             })
 
@@ -426,6 +433,7 @@ def get_user_groups():
         'name': group.name,
         'description': group.description,
         'is_public': group.is_public,
+        'owner' : { 'id': group.owner, 'username': User.query.get(group.owner).username },
         'members': [{'id': member.id, 'username': member.username} for member in group.members]
     } for group in groups]), 200
     
@@ -445,6 +453,7 @@ def get_groups_not_mine():
             'name': group.name,
             'description': group.description,
             'is_public': group.is_public,
+            'owner' : { 'id': group.owner, 'username': User.query.get(group.owner).username },
             'members': [{'id': member.id, 'username': member.username} for member in group.members]
         }
         for group in all_groups 
@@ -473,34 +482,59 @@ def join_group_by_id(group_id):
 def leave_group(group_id):
     group = Group.query.get_or_404(group_id)
     
-    # Remove the user from the group
     if current_user in group.members:
-        group.members.remove(current_user)
-        db.session.commit()
-        return jsonify({'message': 'You have left the group!'}), 200
+        if current_user.id == group.owner and len(group.members) == 1:
+            db.session.delete(group)
+            db.session.commit()
+            return jsonify({'message': 'You have left the group successfully! As you were the last member, the group has been deleted.'}), 200
+        else:
+            group.members.remove(current_user)
+            db.session.commit()
+            return jsonify({'message': 'You have left the group!'}), 200
     else:
         return jsonify({'message': 'You are not a member of this group.'}), 400
+    
+# Delete a Group
+@app.route('/groups/<int:group_id>', methods=['DELETE'])
+@login_required
+def delete_group(group_id):
+    group = Group.query.get_or_404(group_id)
+    
+    if group.owner != current_user.id:
+        return jsonify({'message': 'You are not authorized to delete this group.'}), 403
+    
+    try:        
+        db.session.delete(group)
+        db.session.commit()
+        return jsonify({'message': 'Group deleted successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Something went wrong. Please try again later.'}), 500   
     
 # Search for Groups
 @app.route('/groups/search', methods=['GET'])
 @login_required
 def search_groups():
-    query = request.args.get('query')
+    query = request.args.get('query', '').strip()
     
-    if not query or query.strip() == "":
+    if not query:
         return jsonify([]), 200
-    
+
     groups = Group.query.filter(Group.is_public.is_(True), Group.name.ilike(f'%{query}%')).all()
+
+    owners = {user.id: user.username for user in User.query.filter(User.id.in_([group.owner for group in groups])).all()}
 
     result = [{
         'id': group.id,
         'name': group.name,
         'description': group.description,
         'is_public': group.is_public,
+        'owner': {'id': group.owner, 'username': owners.get(group.owner)},
         'members': [{'id': member.id, 'username': member.username} for member in group.members]
     } for group in groups]
 
     return jsonify(result), 200
+
 
 ##### Others
 

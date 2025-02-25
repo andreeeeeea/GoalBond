@@ -20,21 +20,25 @@
         <div v-if="showForm" class="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md mt-4">
           <h2 class="text-2xl font-semibold mb-4 text-center">Add Goal</h2>
           <form @submit.prevent="addGoal">
-            <div class="mb-4">
+            <div class="mb-4 flex items-center justify-center">
               <label>
                 <input type="radio" v-model="goalType" value="personal" /> Personal Goal
               </label>
-              <label class="ml-4">
-                <input type="radio" v-model="goalType" value="group" /> Group Goal
-              </label>
+              <div v-if="userGroups.length > 0" class="ml-4">
+                <label class="ml-4">
+                  <input type="radio" v-model="goalType" value="group" /> Group Goal
+                </label>
+              </div>
             </div>
 
-            <div v-if="goalType === 'group'" class="mb-4">
+            <!-- Show group selection only if the goal type is 'group' and the user has groups -->
+            <div v-if="goalType === 'group' && userGroups.length > 0" class="mb-4">
               <select v-model="selectedGroup" class="w-full p-2 border border-gray-300 rounded-lg">
                 <option disabled value="">Select a Group</option>
-                <option v-for="group in groups" :key="group.id" :value="group.id">{{ group.name }}</option>
+                <option v-for="group in userGroups" :key="group.id" :value="group.id">{{ group.name }}</option>
               </select>
             </div>
+
 
             <div class="mb-4">
               <input
@@ -103,6 +107,7 @@
             <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
           </form>
         </div>
+
       </div>
       <div class=" min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
       <!-- Main section for displaying goals -->
@@ -135,11 +140,22 @@
         <div v-if="showPersonalGoals" class="py-4">
           <div v-if="personalGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
             <div v-for="goal in personalGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-              <div class="flex-grow">
-                <p class="text-lg font-semibold">{{ goal.title }}</p>
-                <p>{{ goal.description }}</p>
-                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
-                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <div class="flex-grow flex flex-col items-center">
+                <div class="block text-xl text-gray-700 my-4"><strong>{{ goal.title }}</strong></div>
+                <div class="block text-lg text-gray-700">{{  goal.description }}</div>
+                <div class="block text-lg text-gray-700" v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</div>
+                <span v-if="goal.deadline">
+                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000">
+                    <div div class="block text-lg text-gray-700">{{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left </div>
+                  </span>
+                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0">
+                    <div class="block text-lg text-red-500"> {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left </div>
+                  </span>
+                  <span v-else class="flex flex-col items-center justify-center">
+                    Deadline passed
+                    <div class="block text-lg text-gray-700">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
+                  </span>
+                </span>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -160,10 +176,50 @@
                   </button>
                 </div>
               </div>
-              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
-                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-                <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
+              <div class="relative inline-block text-left">
+                <button
+                  @click="toggleDropdown(goal.id)"
+                  class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Options
+                  <svg
+                    class="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
+                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                >
+                  <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
+                    <div class="flex items-center justify-left ml-2 mb-2">
+                      <button
+                        class="text-gray-600 hover:bg-gray-100 font-bold rounded w-auto text-sm block w-full"
+                        @click="toggleGoalCompletion(goal)"
+                      >
+                        Mark as Completed
+                      </button>
+                    </div>
+                    <div class="flex items-center justify-left ml-2">
+                      <button
+                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        @click="deleteGoal(goal.id)"
+                      >
+                        Delete Goal
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -176,11 +232,23 @@
         <div v-if="showGroupGoals" class="py-4">
           <div v-if="groupGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
             <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-              <div class="flex-grow">
-                <p class="text-lg font-semibold">{{ goal.title }}</p>
-                <p>{{ goal.description }}</p>
-                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
-                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <div class="flex-grow flex flex-col items-center">
+                <div class="block text-xl text-gray-700 my-4"><strong>{{ goal.title }}</strong></div>
+                <div class="block text-lg text-gray-700">{{  goal.description }}</div>
+                <div class="block text-lg text-gray-700" v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</div>
+                <div class="block text-lg text-gray-700">Group: {{ goal.group.name }}</div>
+                <span v-if="goal.deadline">
+                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000">
+                    <div div class="block text-lg text-gray-700">{{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left </div>
+                  </span>
+                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0">
+                    <div class="block text-lg text-red-500"> {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left </div>
+                  </span>
+                  <span v-else class="flex flex-col items-center justify-center">
+                    Deadline passed
+                    <div class="block text-lg text-gray-700">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
+                  </span>
+                </span>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -201,10 +269,50 @@
                   </button>
                 </div>
               </div>
-              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="toggleGoalCompletion(goal)">Toggle Completion</button>
-                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
-                <button v-if="goal.category === 'Series'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @click="showUpdateForm(goal)">Update Goal</button>
+              <div class="relative inline-block text-left">
+                <button
+                  @click="toggleDropdown(goal.id)"
+                  class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Options
+                  <svg
+                    class="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
+                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                >
+                  <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
+                    <div class="flex items-center justify-left ml-2 mb-2">
+                      <button
+                        class="text-gray-600 hover:bg-gray-100 font-bold rounded w-auto text-sm block w-full"
+                        @click="toggleGoalCompletion(goal)"
+                      >
+                        Mark as Completed
+                      </button>
+                    </div>
+                    <div class="flex items-center justify-left ml-2">
+                      <button
+                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        @click="deleteGoal(goal.id)"
+                      >
+                        Delete Goal
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -217,34 +325,57 @@
         <div v-if="showCompletedGoals" class="py-4">
           <div v-if="completedGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
             <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-              <div class="flex-grow">
-                <p class="text-lg font-semibold">{{ goal.title }}</p>
-                <p>{{ goal.description }}</p>
-                <p v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</p>
-                <span v-if="goal.deadline">Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}</span>
+              <div class="flex-grow flex flex-col items-center">
+                <div class="block text-xl text-gray-700 my-4"><strong>{{ goal.title }}</strong></div>
+                <div class="block text-lg text-gray-700">{{  goal.description }}</div>
+                <div class="block text-lg text-gray-700" v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</div>
+                <div class="block text-lg text-gray-700" v-if="goal.deadline">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
               </div>
-              <div class="mb-2">
-                <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
-                  <h4 class="mt-4 text-lg font-semibold">Update Current Episode</h4>
-                  <div>
-                    <label for="currentSeason">Season:</label>
-                    <input type="number" id="currentSeason" v-model="goalToUpdate.season" min="1" class="border rounded py-1 px-2" required />
+
+              <div class="relative inline-block text-left">
+                <button
+                  @click="toggleDropdown(goal.id)"
+                  class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Options
+                  <svg
+                    class="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
+                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                >
+                  <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
+                    <div class="flex items-center justify-left ml-2 mb-2">
+                      <button 
+                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        @click="redoGoal(goal)"
+                        >
+                        Re-Do Goal
+                      </button>
+                    </div>
+                    <div class="flex items-center justify-left ml-2">
+                      <button
+                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        @click="deleteGoal(goal.id)"
+                      >
+                        Delete Goal
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <label for="currentEpisode">Episode:</label>
-                    <input type="number" id="currentEpisode" v-model="goalToUpdate.episode" min="1" class="border rounded py-1 px-2" required />
-                  </div>
-                  <button @click="updateGoal(goalToUpdate)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Save
-                  </button>
-                  <button @click="goalToUpdate = null" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                    Cancel
-                  </button>
                 </div>
-              </div>
-              <div v-if="!goalToUpdate || goalToUpdate.id !== goal.id" class="mt-auto justify-center">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="redoGoal(goal)">Re-Do Goal</button>
-                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="deleteGoal(goal.id)">Delete Goal</button>
               </div>
             </div>
           </div>
@@ -268,221 +399,35 @@ import { useStore } from 'vuex';
 import axios from 'axios';
 
 export default {
-  setup() {
-    const store = useStore();
-    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+  props: {
+    goal: {
+      type: Object,
+      required: true,
+    },
+  },
 
-    const showForm = ref(false);
-    const showPersonalGoals = ref(true);
-    const showGroupGoals = ref(false);
-    const showCompletedGoals = ref(false);
-
-    // Goal properties
-    const title = ref('');
-    const description = ref('');
-    const hasDeadline = ref(false);
-    const deadline = ref('');
-    const successMessage = ref('');
-    const errorMessage = ref('');
-    const selectedGroup = ref('');
-    const groups = ref([]);
-    const goalType = ref('personal');
-    const category = ref('');
-    const season = ref('');
-    const episode = ref('');
-    const goalToUpdate = ref(null); 
-
-    // User-specific data
-    const userGroups = ref([]);
-    const userId = ref(null);  
-
-    // Goals data
-    const goals = ref([]);
-
-    // Available goal categories
-    const goalCategories = [
-      'Books', 'Coding', 'Cooking', 'Fitness',
-      'Food and Dining', 'Movies', 'Series',
-      'Music', 'Photography', 'Travel', 'Other'
-    ];
-
-    const goalTypes = [
-      'Personal', 'Group', 'Completed'
-    ];
-
-    // Selected category state
-    const selectedCategory = ref(goalCategories[0]); 
-
-    // Fetch user's personal goals
-    const personalGoalsByCategory = computed(() => 
-      goals.value.filter(goal => 
-        !goal.is_group_goal && 
-        goal.category === selectedCategory.value && 
-        !goal.completed && 
-        goal.user_id === userId.value
-      )
-    );
-
-    // Fetch user's group goals
-    const groupGoalsByCategory = computed(() => 
-      goals.value.filter(goal => 
-        goal.is_group_goal && 
-        goal.category === selectedCategory.value && 
-        !goal.completed && 
-        userGroups.value.some(group => group.id === goal.group_id)
-      )
-    );
-
-    // Fetch completed goals by category
-    const completedGoalsByCategory = computed(() => 
-      goals.value.filter(goal => 
-        goal.category === selectedCategory.value && 
-        goal.completed && 
-        (userGroups.value.some(group => group.id === goal.group_id) || goal.user_id === userId.value)
-      )
-    );
-
-    // Computed property to filter goals based on selected category
-    const filteredGoals = computed(() => {
-      return goals.value.filter(goal => goal.category === selectedCategory.value);
-    });
-
-    onMounted(async () => {
-      await fetchUserDetails();  
-      await fetchGoals();
-      await fetchGroups();
-    });
-
-    // Fetch user details to get current user id and groups
-    const fetchUserDetails = async () => {
-      try {
-        const response = await axios.get('/user'); 
-        userId.value = response.data.id;
-        userGroups.value = response.data.groups; 
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-      }
+  // Component-specific reactive data
+  data() {
+    return {
+      dropdowns: ref({}),
+      openGoalId: null,
+      successMessage: '',
+      errorMessage: '',
+      selectedGroup: '',
+      showForm: false,
+      showPersonalGoals: true,
+      showGroupGoals: false,
+      showCompletedGoals: false,
     };
+  },
 
-    // Fetch goals
-    const fetchGoals = async () => {
-      try {
-        const response = await axios.get('/goals');
-        goals.value = response.data;
-      } catch (error) {
-        console.error('Error fetching goals:', error);
-      }
-    };
+  // Methods
+  methods: {
+    toggleDropdown(goalId) {
+      this.openGoalId = this.openGoalId === goalId ? null : goalId;
+    },
 
-    // Fetch groups
-    const fetchGroups = async () => {
-      try {
-        const response = await axios.get('/groups');
-        groups.value = response.data;
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      }
-    };
-
-    const addGoal = async () => {
-      if (!title.value ) {
-        errorMessage.value = 'Please provide a title and description for the goal.';
-        return;
-      }
-
-      if (!category.value) {
-        errorMessage.value = 'Please select a category.';
-        return;     
-      }
-
-      if(category.value === 'Series' && (!season.value || !episode.value)) {
-        errorMessage.value = 'Please provide a season and episode number.';
-        return;
-      }
-
-      errorMessage.value = '';
-
-      const titleCapitalized = title.value
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-
-      const descriptionCapitalized = description.value
-        ? `${description.value.charAt(0).toUpperCase()}${description.value.slice(1)}${/[\w]$/.test(description.value) && !/[.!?]$/.test(description.value) ? '.' : ''}`
-        : '';
-
-     const goalData = {
-        title: titleCapitalized,
-        description: descriptionCapitalized,
-        hasDeadline: hasDeadline.value,
-        deadline: hasDeadline.value ? deadline.value : null,
-        is_group_goal: goalType.value === 'group',
-        group_id: goalType.value === 'group' ? selectedGroup.value : null,
-        category: category.value,
-        season: category.value === 'Series' ? season.value : null,
-        episode: category.value === 'Series' ? episode.value : null,
-      };
-
-      try {
-        const response = await axios.post('/goals', goalData);
-        goals.value.push(response.data);
-        successMessage.value = 'Goal added successfully!';
-        clearForm();
-        await fetchGoals();
-        setTimeout(() => successMessage.value = '', 4000);
-      } catch (error) {
-        errorMessage.value = 'Failed to add goal.';
-        console.error("Error adding goal:", error);
-        setTimeout(() => errorMessage.value = '', 4000);
-      }
-    };
-
-    const clearForm = () => {
-      title.value = '';
-      description.value = '';
-      hasDeadline.value = false;
-      deadline.value = '';
-      selectedGroup.value = '';
-      goalType.value = 'personal';
-      category.value = '';
-      season.value = '';
-      episode.value = '';
-    };
-
-    const toggleGoalCompletion = async (goal) => {
-      try {
-        goal.completed = !goal.completed;
-        await axios.put(`/goals/${goal.id}`, { completed: goal.completed });
-      } catch (error) {
-        console.error("Error toggling goal completion:", error);
-      }
-    };
-
-    const deleteGoal = async (goalId) => {
-      try {
-        await axios.delete(`/goals/${goalId}`);
-        goals.value = goals.value.filter(goal => goal.id !== goalId);
-      } catch (error) {
-        console.error("Error deleting goal:", error);
-      }
-    };
-
-    const updateGoal = async (goal) => {
-      try {
-        await axios.put(`/goals/${goal.id}`, {
-          season: goal.season,
-          episode: goal.episode,
-        });
-        
-        await fetchGoals();
-
-        goalToUpdate.value = null;
-      } catch (error) {
-        console.error("Error updating goal:", error);
-      }
-    };
-
-    const redoGoal = async (goal) => {
+    redoGoal(goal) {
       const newGoal = {
         title: goal.title,
         description: goal.description,
@@ -494,62 +439,210 @@ export default {
         season: goal.season,
         episode: goal.episode,
       };
+      axios.post('/goals', newGoal)
+        .then(response => {
+          this.goals.push(response.data);
+          this.fetchGoals(); // Ensure this method is in your methods or setup.
+        })
+        .catch(error => {
+          console.error("Error redoing goal:", error);
+        });
+    },
+
+    // Goal completion toggle
+    async toggleGoalCompletion(goal) {
+      try {
+        goal.completed = !goal.completed;
+        await axios.put(`/goals/${goal.id}`, { completed: goal.completed });
+      } catch (error) {
+        console.error('Error toggling goal completion:', error);
+      }
+    },
+
+    // Delete goal
+    async deleteGoal(goalId) {
+      try {
+        await axios.delete(`/goals/${goalId}`);
+        this.goals = this.goals.filter((goal) => goal.id !== goalId);
+      } catch (error) {
+        console.error('Error deleting goal:', error);
+      }
+    },
+
+    // Show goal update form
+    showUpdateForm(goal) {
+      console.log('Showing update form for goal:', goal);
+      this.goalToUpdate = { ...goal };
+    },
+
+    // Cancel goal update
+    cancelUpdate() {
+      this.goalToUpdate = null;
+    },
+
+    // Select a goal category
+    selectCategory(category) {
+      this.selectedCategory = category;
+    },
+  },
+
+  setup() {
+    const store = useStore();
+    // eslint-disable-next-line no-unused-vars
+    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+    console.log('isAuthenticated:', isAuthenticated.value);
+
+    // Reactive properties for goals and user details
+    const title = ref('');
+    const description = ref('');
+    const hasDeadline = ref(false);
+    const deadline = ref('');
+    const category = ref('');
+    const season = ref('');
+    const episode = ref('');
+    const goalToUpdate = ref(null);
+
+    // User and group data
+    const userId = ref(null);
+    const userGroups = ref([]);
+    const groups = ref([]);
+
+    // Goals data
+    const goals = ref([]);
+
+    // Available categories
+    const goalCategories = [
+      'Books',
+      'Coding',
+      'Cooking',
+      'Fitness',
+      'Food and Dining',
+      'Movies',
+      'Series',
+      'Music',
+      'Photography',
+      'Travel',
+      'Other',
+    ];
+
+    // Selected category
+    const selectedCategory = ref(goalCategories[0]);
+
+    // Computed properties
+    const personalGoalsByCategory = computed(() =>
+      goals.value.filter(
+        (goal) =>
+          !goal.is_group_goal &&
+          goal.category === selectedCategory.value &&
+          !goal.completed &&
+          goal.user_id === userId.value
+      )
+    );
+
+    const groupGoalsByCategory = computed(() =>
+      goals.value.filter(
+        (goal) =>
+          goal.is_group_goal &&
+          goal.category === selectedCategory.value &&
+          !goal.completed &&
+          userGroups.value.some((group) => group.id === goal.group_id)
+      )
+    );
+
+    const completedGoalsByCategory = computed(() =>
+      goals.value.filter(
+        (goal) =>
+          goal.category === selectedCategory.value &&
+          goal.completed &&
+          (userGroups.value.some((group) => group.id === goal.group_id) ||
+            goal.user_id === userId.value)
+      )
+    );
+
+    // Fetch user details
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get('/user');
+        userId.value = response.data.id;
+        userGroups.value = response.data.groups;
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
+
+    // Fetch all goals
+    const fetchGoals = async () => {
+      try {
+        const response = await axios.get('/goals');
+        goals.value = response.data;
+      } catch (error) {
+        console.error('Error fetching goals:', error);
+      }
+    };
+
+    // Fetch user groups
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get('/groups');
+        groups.value = response.data;
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    };
+
+    // Add a new goal
+    const addGoal = async () => {
+      if (!title.value) {
+        console.error('Title is required.');
+        return;
+      }
+
+      const newGoal = {
+        title: title.value,
+        description: description.value,
+        hasDeadline: hasDeadline.value,
+        deadline: hasDeadline.value ? deadline.value : null,
+        category: category.value,
+        season: category.value === 'Series' ? season.value : null,
+        episode: category.value === 'Series' ? episode.value : null,
+      };
+
       try {
         const response = await axios.post('/goals', newGoal);
         goals.value.push(response.data);
-        await fetchGoals();
       } catch (error) {
-        console.error("Error redoing goal:", error);
+        console.error('Failed to add goal:', error);
       }
     };
-      
-    const showUpdateForm = (goal) => {
-      console.log('Showing update form for goal:', goal);
-      goalToUpdate.value = { ...goal }; 
-    };
 
-    const cancelUpdate = () => {
-      goalToUpdate.value = null; 
-    };
-
-    const selectCategory = (category) => {
-      selectedCategory.value = category; 
-    };
+    onMounted(async () => {
+      await fetchUserDetails();
+      await fetchGoals();
+      await fetchGroups();
+    });
 
     return {
+      isAuthenticated,
       title,
       description,
       hasDeadline,
       deadline,
-      successMessage,
-      errorMessage,
-      selectedGroup,
-      groups,
-      goalType,
       category,
       season,
       episode,
       goalToUpdate,
+      goals,
+      groups,
+      userId,
+      userGroups,
+      goalCategories,
+      selectedCategory,
       personalGoalsByCategory,
       groupGoalsByCategory,
       completedGoalsByCategory,
-      isAuthenticated,
-      showForm,
-      showPersonalGoals,
-      showGroupGoals,
-      showCompletedGoals,
+      fetchGoals,
+      fetchUserDetails,
       addGoal,
-      toggleGoalCompletion,
-      deleteGoal,
-      updateGoal,
-      showUpdateForm,
-      cancelUpdate,
-      goalCategories,
-      goalTypes,
-      selectedCategory,
-      filteredGoals,
-      selectCategory, 
-      redoGoal
     };
   },
 };

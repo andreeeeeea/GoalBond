@@ -2,9 +2,9 @@
     <footer class="bg-gray-800 text-white py-6 mt-10">
       <div class="container mx-auto text-center">
         <div class="flex justify-center space-x-4 mb-4">
-          <a href="#" class="hover:underline">Privacy Policy</a>
-          <a href="#" class="hover:underline">Terms of Service</a>
-          <a href="#" class="hover:underline">Contact Us</a>
+          <a href="/privacy" class="hover:underline">Privacy Policy</a>
+          <a href="/terms" class="hover:underline">Terms of Service</a>
+          <a href="/contact" class="hover:underline">Contact Us</a>
         </div>
         <div>
           <p class="text-sm">Made with ❤️ by Andreea</p>
