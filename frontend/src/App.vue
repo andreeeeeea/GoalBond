@@ -1,4 +1,5 @@
 <template>
+  <notifications group="foo" />
   <div id="app" class="min-h-screen bg-gray-100 flex flex-col">
     <Navbar />
     <main class="flex-grow pt-4">

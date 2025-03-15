@@ -36,7 +36,7 @@
 
       <!-- Account Section -->
       <div v-if="currentView === 'account'" class="flex flex-col space-y-4">
-        <h2 class="text-2xl font-semibold mb-4">Account Information</h2>
+        <h2 class="text-2xl font-bold">Account Information</h2>
         <div v-if="editing">
           <div>
             <label for="nickname" class="block text-lg">Nickname</label>

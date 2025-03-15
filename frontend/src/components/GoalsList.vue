@@ -16,97 +16,6 @@
             {{ showForm ? 'Cancel' : 'Add Goal' }}
           </button>
         </div>
-        <!-- Add Goal Section -->
-        <div v-if="showForm" class="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md mt-4">
-          <h2 class="text-2xl font-semibold mb-4 text-center">Add Goal</h2>
-          <form @submit.prevent="addGoal">
-            <div class="mb-4 flex items-center justify-center">
-              <label>
-                <input type="radio" v-model="goalType" value="personal" /> Personal Goal
-              </label>
-              <div v-if="userGroups.length > 0" class="ml-4">
-                <label class="ml-4">
-                  <input type="radio" v-model="goalType" value="group" /> Group Goal
-                </label>
-              </div>
-            </div>
-
-            <!-- Show group selection only if the goal type is 'group' and the user has groups -->
-            <div v-if="goalType === 'group' && userGroups.length > 0" class="mb-4">
-              <select v-model="selectedGroup" class="w-full p-2 border border-gray-300 rounded-lg">
-                <option disabled value="">Select a Group</option>
-                <option v-for="group in userGroups" :key="group.id" :value="group.id">{{ group.name }}</option>
-              </select>
-            </div>
-
-
-            <div class="mb-4">
-              <input
-                v-model="title"
-                type="text"
-                placeholder="Goal Title"
-                required
-                class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            <div class="mb-4">
-              <textarea
-                v-model="description"
-                placeholder="Description"
-                class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              ></textarea>
-            </div>
-
-            <div class="mb-4">
-              <label for="category">Category:</label>
-              <select v-model="category" id="category" class="w-full p-2 border border-gray-300 rounded-lg">
-                <option disabled value="">Select a Category</option>
-                <option value="Books">Books</option>
-                <option value="Coding">Coding</option>
-                <option value="Cooking">Cooking</option>
-                <option value="Fitness">Fitness</option>
-                <option value="Food and Dining">Food and Dining</option>
-                <option value="Movies">Movies/Series</option>
-                <option value="Series">Series</option>
-                <option value="Music">Music</option>
-                <option value="Photography">Photography</option>
-                <option value="Travel">Travel</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div v-if="category === 'Series'" class="mb-4">
-              <label for="season">Season:</label>
-              <input type="number" id="season" v-model="season" class="w-full p-2 border border-gray-300 rounded-lg" required />
-            </div>
-
-            <div v-if="category === 'Series'" class="mb-4">
-              <label for="episode">Episode:</label>
-              <input type="number" id="episode" v-model="episode" class="w-full p-2 border border-gray-300 rounded-lg" required />
-            </div>
-
-            <div class="mb-4">
-              <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
-              <label for="hasDeadline">Add Deadline?</label>
-            </div>
-
-            <div v-if="hasDeadline" class="mb-4">
-              <label for="deadline">Deadline:</label>
-              <input type="date" id="deadline" v-model="deadline" required />
-            </div>
-
-            <button
-              type="submit"
-              class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-500 transition duration-300"
-            >
-              Add Goal
-            </button>
-
-            <p v-if="successMessage" class="text-green-500 mt-2">{{ successMessage }}</p>
-            <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
-          </form>
-        </div>
 
       </div>
       <div class=" min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
@@ -384,6 +293,64 @@
           </div>
         </div>
       </div>
+
+      <!-- Add Goal and Form -->
+      <div v-if="showForm" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm">
+        <div class="max-w-lg w-full p-6 bg-white rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold mb-4 text-center">Add Goal</h2>
+          <form @submit.prevent="addGoal">
+            <div class="mb-4 flex items-center justify-center">
+              <label>
+                <input type="radio" v-model="goalType" value="personal" /> Personal Goal
+              </label>
+              <div v-if="userGroups.length > 0" class="ml-4">
+                <label class="ml-4">
+                  <input type="radio" v-model="goalType" value="group" /> Group Goal
+                </label>
+              </div>
+            </div>
+
+            <div v-if="goalType === 'group' && userGroups.length > 0" class="mb-4">
+              <select v-model="selectedGroup" class="w-full p-2 border border-gray-300 rounded-lg">
+                <option disabled value="">Select a Group</option>
+                <option v-for="group in userGroups" :key="group.id" :value="group.id">{{ group.name }}</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <input v-model="title" type="text" placeholder="Goal Title" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+
+            <div class="mb-4">
+              <textarea v-model="description" placeholder="Description" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label for="category">Category:</label>
+              <select v-model="category" id="category" class="w-full p-2 border border-gray-300 rounded-lg">
+                <option disabled value="">Select a Category</option>
+                <option v-for="category in goalCategories" :key="category" :value="category">{{ category }}</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
+              <label for="hasDeadline">Add Deadline?</label>
+            </div>
+
+            <div v-if="hasDeadline" class="mb-4">
+              <label for="deadline">Deadline:</label>
+              <input type="date" id="deadline" v-model="deadline" required />
+            </div>
+
+            <div class="flex justify-between space-x-2">
+              <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">Add Goal</button>
+              <button @click="showForm = false" type="button" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">Cancel</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </section>
   </div>
   <div v-else class="text-center mt-10">
@@ -411,8 +378,6 @@ export default {
     return {
       dropdowns: ref({}),
       openGoalId: null,
-      successMessage: '',
-      errorMessage: '',
       selectedGroup: '',
       showForm: false,
       showPersonalGoals: true,
@@ -496,13 +461,15 @@ export default {
     const title = ref('');
     const description = ref('');
     const hasDeadline = ref(false);
-    const deadline = ref('');
+    const deadline = ref(''); 
+    const selectedGroup = ref('');
+    const goalType = ref('personal');
     const category = ref('');
     const season = ref('');
     const episode = ref('');
     const goalToUpdate = ref(null);
 
-    // User and group data
+    // User and group data  
     const userId = ref(null);
     const userGroups = ref([]);
     const groups = ref([]);
@@ -592,30 +559,64 @@ export default {
 
     // Add a new goal
     const addGoal = async () => {
-      if (!title.value) {
-        console.error('Title is required.');
+      if (!title.value ) {
         return;
       }
 
-      const newGoal = {
-        title: title.value,
-        description: description.value,
+      if (!category.value) {
+        return;     
+      }
+
+      if(category.value === 'Series' && (!season.value || !episode.value)) {
+        return;
+      }
+
+
+      const titleCapitalized = title.value
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      const descriptionCapitalized = description.value
+        ? `${description.value.charAt(0).toUpperCase()}${description.value.slice(1)}${/[\w]$/.test(description.value) && !/[.!?]$/.test(description.value) ? '.' : ''}`
+        : '';
+
+     const goalData = {
+        title: titleCapitalized,
+        description: descriptionCapitalized,
         hasDeadline: hasDeadline.value,
         deadline: hasDeadline.value ? deadline.value : null,
+        is_group_goal: goalType.value === 'group',
+        group_id: goalType.value === 'group' ? selectedGroup.value : null,
         category: category.value,
         season: category.value === 'Series' ? season.value : null,
         episode: category.value === 'Series' ? episode.value : null,
       };
 
       try {
-        const response = await axios.post('/goals', newGoal);
+        const response = await axios.post('/goals', goalData);
         goals.value.push(response.data);
+        clearForm();
+        await fetchGoals();
       } catch (error) {
-        console.error('Failed to add goal:', error);
+        console.error("Error adding goal:", error);
       }
     };
 
+    const clearForm = () => {
+      title.value = '';
+      description.value = '';
+      hasDeadline.value = false;
+      deadline.value = '';
+      selectedGroup.value = '';
+      goalType.value = 'personal';
+      category.value = '';
+      season.value = '';
+      episode.value = '';
+    };
+
     onMounted(async () => {
+      goalType.value =
       await fetchUserDetails();
       await fetchGoals();
       await fetchGroups();
