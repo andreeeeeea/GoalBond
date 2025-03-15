@@ -85,7 +85,7 @@
                   </button>
                 </div>
               </div>
-              <div class="relative inline-block text-left">
+              <div class="relative inline-block text-left self-end">
                 <button
                   @click="toggleDropdown(goal.id)"
                   class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -108,7 +108,7 @@
 
                 <div
                   v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  class="origin-top-right absolute right-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                 >
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
                     <div class="flex items-center justify-left ml-2 mb-2">
@@ -178,7 +178,7 @@
                   </button>
                 </div>
               </div>
-              <div class="relative inline-block text-left">
+              <div class="relative inline-block text-left self-end">
                 <button
                   @click="toggleDropdown(goal.id)"
                   class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -201,7 +201,7 @@
 
                 <div
                   v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  class="origin-top-right absolute right-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                 >
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
                     <div class="flex items-center justify-left ml-2 mb-2">
@@ -241,7 +241,7 @@
                 <div class="block text-lg text-gray-700" v-if="goal.deadline">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
               </div>
 
-              <div class="relative inline-block text-left">
+              <div class="relative inline-block text-left self-end">
                 <button
                   @click="toggleDropdown(goal.id)"
                   class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -264,7 +264,7 @@
 
                 <div
                   v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  class="origin-top-right absolute right-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                 >
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
                     <div class="flex items-center justify-left ml-2 mb-2">
@@ -300,12 +300,26 @@
           <h2 class="text-2xl font-semibold mb-4 text-center">Add Goal</h2>
           <form @submit.prevent="addGoal">
             <div class="mb-4 flex items-center justify-center">
-              <label>
-                <input type="radio" v-model="goalType" value="personal" /> Personal Goal
-              </label>
-              <div v-if="userGroups.length > 0" class="ml-4">
-                <label class="ml-4">
-                  <input type="radio" v-model="goalType" value="group" /> Group Goal
+              <div class="flex gap-4">
+                <label class="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    name="goalType"
+                    v-model="goalType" 
+                    value="personal"
+                    class="form-radio" 
+                  />
+                  <span class="ml-2">Personal Goal</span>
+                </label>
+                <label v-if="userGroups.length > 0" class="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    name="goalType"
+                    v-model="goalType" 
+                    value="group"
+                    class="form-radio" 
+                  />
+                  <span class="ml-2">Group Goal</span>
                 </label>
               </div>
             </div>
@@ -318,7 +332,7 @@
             </div>
 
             <div class="mb-4">
-              <input v-model="title" type="text" placeholder="Goal Title" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+              <input v-model="title" type="text" placeholder="Goal Title" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
             </div>
 
             <div class="mb-4">
@@ -331,6 +345,16 @@
                 <option disabled value="">Select a Category</option>
                 <option v-for="category in goalCategories" :key="category" :value="category">{{ category }}</option>
               </select>
+            </div>
+
+            <div v-if="category === 'Series'" class="mb-4">
+              <label for="season">Season:</label>
+              <input type="number" id="season" v-model="season" class="w-full p-2 border border-gray-300 rounded-lg" />
+            </div>
+
+            <div v-if="category === 'Series'" class="mb-4">
+              <label for="episode">Episode:</label>
+              <input type="number" id="episode" v-model="episode" class="w-full p-2 border border-gray-300 rounded-lg" />
             </div>
 
             <div class="mb-4">
@@ -361,9 +385,11 @@
 
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref  } from 'vue';
 import { useStore } from 'vuex';
 import axios from 'axios';
+import { useToast } from "vue-toastification";
+
 
 export default {
   props: {
@@ -373,7 +399,6 @@ export default {
     },
   },
 
-  // Component-specific reactive data
   data() {
     return {
       dropdowns: ref({}),
@@ -383,13 +408,126 @@ export default {
       showPersonalGoals: true,
       showGroupGoals: false,
       showCompletedGoals: false,
+      title: '',
+      description: '',
+      hasDeadline: false,
+      deadline: '',
+      goalType: 'personal',
+      category: '',
+      season: '',
+      episode: '',
+      goalToUpdate: null,
+      userId: null,
+      userGroups: [],
+      groups: [],
+      goals: [],
+      selectedCategory: 'Books',
+      goalCategories: [
+        'Books',
+        'Coding',
+        'Cooking',
+        'Fitness',
+        'Food and Dining',
+        'Movies',
+        'Series',
+        'Music',
+        'Photography',
+        'Travel',
+        'Other',
+      ],
     };
   },
 
-  // Methods
+  computed: {
+    isAuthenticated() {
+      const store = useStore();
+      return store.getters.isAuthenticated;
+    },
+
+    personalGoalsByCategory() {
+      return this.goals.filter(
+        (goal) =>
+          !goal.is_group_goal &&
+          goal.category === this.selectedCategory &&
+          !goal.completed &&
+          goal.user_id === this.userId
+      );
+    },
+
+    groupGoalsByCategory() {
+      return this.goals.filter(
+        (goal) =>
+          goal.is_group_goal &&
+          goal.category === this.selectedCategory &&
+          !goal.completed &&
+          this.userGroups.some((group) => group.id === goal.group_id)
+      );
+    },
+
+    completedGoalsByCategory() {
+      return this.goals.filter(
+        (goal) =>
+          goal.category === this.selectedCategory &&
+          goal.completed &&
+          (this.userGroups.some((group) => group.id === goal.group_id) ||
+            goal.user_id === this.userId)
+      );
+    },
+  },
+
   methods: {
     toggleDropdown(goalId) {
       this.openGoalId = this.openGoalId === goalId ? null : goalId;
+    },
+
+    async addGoal() {
+      if (!this.title ) {
+        this.toast.error('Title is required.');
+        return;
+      }
+
+      if (!this.category) {
+        this.toast.error('Category is required.');
+        return;
+      }
+
+      if (this.category === 'Series' && (!this.season || !this.episode)) {
+        this.toast.error('Season and Episode are required.');
+        return;
+      }
+
+      const titleCapitalized = this.title
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      const descriptionCapitalized = this.description
+        ? `${this.description.charAt(0).toUpperCase()}${this.description.slice(1)}${/[\w]$/.test(this.description) && !/[.!?]$/.test(this.description) ? '.' : ''}`
+        : '';
+
+      const goalData = {
+        title: titleCapitalized,
+        description: descriptionCapitalized,
+        hasDeadline: this.hasDeadline,
+        deadline: this.hasDeadline ? this.deadline : null,
+        is_group_goal: this.goalType === 'group',
+        group_id: this.goalType === 'group' ? this.selectedGroup : null,
+        category: this.category,
+        season: this.category === 'Series' ? this.season : null,
+        episode: this.category === 'Series' ? this.episode : null,
+      };
+
+      try {
+        const response = await axios.post('/goals', goalData);
+        this.goals.push(response.data);
+        this.clearForm();
+        this.showForm = false;
+        this.toast.success('Goal added successfully.');
+        await this.fetchGoals();
+      } catch (error) {
+        console.error("Error adding goal:", error);
+        this.toast.error('Goal could not be added. Please try again.');
+      }
     },
 
     redoGoal(goal) {
@@ -407,14 +545,13 @@ export default {
       axios.post('/goals', newGoal)
         .then(response => {
           this.goals.push(response.data);
-          this.fetchGoals(); // Ensure this method is in your methods or setup.
+          this.fetchGoals();
         })
         .catch(error => {
           console.error("Error redoing goal:", error);
         });
     },
 
-    // Goal completion toggle
     async toggleGoalCompletion(goal) {
       try {
         goal.completed = !goal.completed;
@@ -424,7 +561,6 @@ export default {
       }
     },
 
-    // Delete goal
     async deleteGoal(goalId) {
       try {
         await axios.delete(`/goals/${goalId}`);
@@ -434,217 +570,64 @@ export default {
       }
     },
 
-    // Show goal update form
     showUpdateForm(goal) {
-      console.log('Showing update form for goal:', goal);
       this.goalToUpdate = { ...goal };
     },
 
-    // Cancel goal update
     cancelUpdate() {
       this.goalToUpdate = null;
     },
 
-    // Select a goal category
     selectCategory(category) {
       this.selectedCategory = category;
     },
-  },
 
-  setup() {
-    const store = useStore();
-    // eslint-disable-next-line no-unused-vars
-    const isAuthenticated = computed(() => store.getters.isAuthenticated);
-    console.log('isAuthenticated:', isAuthenticated.value);
-
-    // Reactive properties for goals and user details
-    const title = ref('');
-    const description = ref('');
-    const hasDeadline = ref(false);
-    const deadline = ref(''); 
-    const selectedGroup = ref('');
-    const goalType = ref('personal');
-    const category = ref('');
-    const season = ref('');
-    const episode = ref('');
-    const goalToUpdate = ref(null);
-
-    // User and group data  
-    const userId = ref(null);
-    const userGroups = ref([]);
-    const groups = ref([]);
-
-    // Goals data
-    const goals = ref([]);
-
-    // Available categories
-    const goalCategories = [
-      'Books',
-      'Coding',
-      'Cooking',
-      'Fitness',
-      'Food and Dining',
-      'Movies',
-      'Series',
-      'Music',
-      'Photography',
-      'Travel',
-      'Other',
-    ];
-
-    // Selected category
-    const selectedCategory = ref(goalCategories[0]);
-
-    // Computed properties
-    const personalGoalsByCategory = computed(() =>
-      goals.value.filter(
-        (goal) =>
-          !goal.is_group_goal &&
-          goal.category === selectedCategory.value &&
-          !goal.completed &&
-          goal.user_id === userId.value
-      )
-    );
-
-    const groupGoalsByCategory = computed(() =>
-      goals.value.filter(
-        (goal) =>
-          goal.is_group_goal &&
-          goal.category === selectedCategory.value &&
-          !goal.completed &&
-          userGroups.value.some((group) => group.id === goal.group_id)
-      )
-    );
-
-    const completedGoalsByCategory = computed(() =>
-      goals.value.filter(
-        (goal) =>
-          goal.category === selectedCategory.value &&
-          goal.completed &&
-          (userGroups.value.some((group) => group.id === goal.group_id) ||
-            goal.user_id === userId.value)
-      )
-    );
-
-    // Fetch user details
-    const fetchUserDetails = async () => {
+    async fetchUserDetails() {
       try {
         const response = await axios.get('/user');
-        userId.value = response.data.id;
-        userGroups.value = response.data.groups;
+        this.userId = response.data.id;
+        this.userGroups = response.data.groups;
       } catch (error) {
         console.error('Error fetching user details:', error);
       }
-    };
+    },
 
-    // Fetch all goals
-    const fetchGoals = async () => {
+    async fetchGoals() {
       try {
         const response = await axios.get('/goals');
-        goals.value = response.data;
+        this.goals = response.data;
       } catch (error) {
         console.error('Error fetching goals:', error);
       }
-    };
+    },
 
-    // Fetch user groups
-    const fetchGroups = async () => {
+    async fetchGroups() {
       try {
         const response = await axios.get('/groups');
-        groups.value = response.data;
+        this.groups = response.data;
       } catch (error) {
         console.error('Error fetching groups:', error);
       }
-    };
+    },
 
-    // Add a new goal
-    const addGoal = async () => {
-      if (!title.value ) {
-        return;
-      }
+    clearForm() {
+      this.title = '';
+      this.description = '';
+      this.hasDeadline = false;
+      this.deadline = '';
+      this.selectedGroup = '';
+      this.goalType = 'personal';
+      this.category = '';
+      this.season = '';
+      this.episode = '';
+    },
+  },
 
-      if (!category.value) {
-        return;     
-      }
-
-      if(category.value === 'Series' && (!season.value || !episode.value)) {
-        return;
-      }
-
-
-      const titleCapitalized = title.value
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-
-      const descriptionCapitalized = description.value
-        ? `${description.value.charAt(0).toUpperCase()}${description.value.slice(1)}${/[\w]$/.test(description.value) && !/[.!?]$/.test(description.value) ? '.' : ''}`
-        : '';
-
-     const goalData = {
-        title: titleCapitalized,
-        description: descriptionCapitalized,
-        hasDeadline: hasDeadline.value,
-        deadline: hasDeadline.value ? deadline.value : null,
-        is_group_goal: goalType.value === 'group',
-        group_id: goalType.value === 'group' ? selectedGroup.value : null,
-        category: category.value,
-        season: category.value === 'Series' ? season.value : null,
-        episode: category.value === 'Series' ? episode.value : null,
-      };
-
-      try {
-        const response = await axios.post('/goals', goalData);
-        goals.value.push(response.data);
-        clearForm();
-        await fetchGoals();
-      } catch (error) {
-        console.error("Error adding goal:", error);
-      }
-    };
-
-    const clearForm = () => {
-      title.value = '';
-      description.value = '';
-      hasDeadline.value = false;
-      deadline.value = '';
-      selectedGroup.value = '';
-      goalType.value = 'personal';
-      category.value = '';
-      season.value = '';
-      episode.value = '';
-    };
-
-    onMounted(async () => {
-      goalType.value =
-      await fetchUserDetails();
-      await fetchGoals();
-      await fetchGroups();
-    });
-
-    return {
-      isAuthenticated,
-      title,
-      description,
-      hasDeadline,
-      deadline,
-      category,
-      season,
-      episode,
-      goalToUpdate,
-      goals,
-      groups,
-      userId,
-      userGroups,
-      goalCategories,
-      selectedCategory,
-      personalGoalsByCategory,
-      groupGoalsByCategory,
-      completedGoalsByCategory,
-      fetchGoals,
-      fetchUserDetails,
-      addGoal,
-    };
+  async mounted() {
+    this.toast = useToast();
+    await this.fetchUserDetails();
+    await this.fetchGoals();
+    await this.fetchGroups();
   },
 };
 </script>

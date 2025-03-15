@@ -22,7 +22,7 @@
           <button
             v-if="!isAuthenticated"
             @click="goToSignUp"
-            class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
+            class="border-2 border-[#B03052] text-[#B03052] font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[#B03052] hover:text-white transition-all duration-300 ease-in-out text-lg"
           >
             Join GoalBond Now!
           </button>
@@ -31,13 +31,13 @@
           <div v-if="isAuthenticated" class="flex space-x-6 mt-8">
             <button
               @click="goToGoals"
-              class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
+              class="bg-[#B03052] text-white py-4 px-10 rounded-full shadow-lg hover:bg-[#3D0301] transition-all duration-300 ease-in-out text-lg"
             >
               My Goals
             </button>
             <button
               @click="goToGroups"
-              class="bg-gray-800 text-white py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out text-lg"
+              class="bg-[#B03052] text-white py-4 px-10 rounded-full shadow-lg hover:bg-[#3D0301] transition-all duration-300 ease-in-out text-lg"
             >
               My Account
             </button>
@@ -60,10 +60,10 @@
       </div>
     </section>
 
-    <section class="bg-gray-100 overflow-hidden py-14 mx-20">
+    <section class="overflow-hidden py-14 mx-20">
       <div class="flex justify-center items-center mx-auto">
-        <div class="flex flex-col items-center relative z-10 mx-4">
-          <div class="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
+        <div class="flex flex-col items-center relative mx-4">
+          <div class="bg-[#B03052] text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
             1
           </div>
           <p class="text-lg font-semibold text-center">Create Account</p>
@@ -71,23 +71,23 @@
         </div>
 
         <div class="flex items-center">
-          <div class="h-1 w-16 bg-gray-300"></div>
-          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-gray-300"></div>
+          <div class="h-1 w-16 bg-[#3D0301]"></div>
+          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-[#3D0301]"></div>
         </div>
-        <div class="flex flex-col items-center relative z-10 mx-4">
-          <div class="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
+        <div class="flex flex-col items-center relative mx-4">
+          <div class="bg-[#B03052] text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
             2
           </div>
           <p class="text-lg font-semibold text-center">Group Up</p>
-          <p class="text-gray-600 text-center">(Optionally) Join or create groups to work together.</p>
+          <p class="text-gray-600 text-center">Join or create groups to work together.</p>
         </div>
 
         <div class="flex items-center">
-          <div class="h-1 w-16 bg-gray-300"></div>
-          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-gray-300"></div>
+          <div class="h-1 w-16 bg-[#3D0301]"></div>
+          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-[#3D0301]"></div>
         </div>
-        <div class="flex flex-col items-center relative z-10 mx-4">
-          <div class="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
+        <div class="flex flex-col items-center relative mx-4">
+          <div class="bg-[#B03052] text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
             3
           </div>
           <p class="text-lg font-semibold text-center">Set Your Goals</p>
@@ -95,11 +95,11 @@
         </div>
 
         <div class="flex items-center">
-          <div class="h-1 w-16 bg-gray-300"></div>
-          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-gray-300"></div>
+          <div class="h-1 w-16 bg-[#3D0301]"></div>
+          <div class="w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-[#3D0301]"></div>
         </div>
-        <div class="flex flex-col items-center relative z-10 mx-4">
-          <div class="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
+        <div class="flex flex-col items-center relative mx-4">
+          <div class="bg-[#B03052] text-white rounded-full w-12 h-12 flex items-center justify-center mb-2">
             4
           </div>
           <p class="text-lg font-semibold text-center">Track Progress</p>
@@ -134,29 +134,6 @@ export default {
     const typingSpeed = 100;
     const erasingSpeed = 50;
     const delayBetweenTexts = 1500;
-
-    const testimonials = [
-      {
-        quote: "GoalBond helped me achieve my travel goals! I finally visited Paris!",
-        author: "Sarah T.",
-        username: "sarah123",
-      },
-      {
-        quote: "The collaborative features made planning with friends so easy and fun!",
-        author: "John Lawson",
-        username: "johnlawson",
-      },
-      {
-        quote: "I was able to finally complete my bucket list thanks to GoalBond!",
-        author: "Emily W.",
-        username: "emilyWatts",
-      },
-      {
-        quote: "GoalBond is a great tool for keeping track of goals and progress. I love it!",
-        author: "David M.",
-        username: "davidMoritz",
-      }
-    ];
 
     const goToSignUp = () => {
       router.push('/signup');
@@ -209,7 +186,6 @@ export default {
       goToSignUp,
       goToGoals,
       goToGroups,
-      testimonials,
       currentText
     };
   },
