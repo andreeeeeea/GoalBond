@@ -49,6 +49,7 @@
 
 <script>
 import axios from 'axios';
+import { useToast } from 'vue-toastification';
 
 export default {
   data() {
@@ -84,8 +85,10 @@ export default {
         
         // Redirect to login page
         this.$router.push('/login');
+        this.toast.success('Successfully signed up! Please check your email to verify your account.');
       } catch (error) {
         console.error('Error adding user:', error);
+        this.toast.error('Error signing up. Please try again.');
         if (error.response && error.response.data) {
           this.errorMessage = error.response.data.message; // Set the error message returned from the backend
         } else {
@@ -95,6 +98,7 @@ export default {
     }
   },
   mounted() {
+    this.toast = useToast();
     if (this.isAuthenticated) {
       this.$router.push('/');
     }

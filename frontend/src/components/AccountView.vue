@@ -245,9 +245,6 @@
           </button>
         </form>
       </div>
-
-      <!-- Success and Error Messages -->
-      <p v-if="message" :class="messageClass" class="mt-2 text-center block text-md"><strong> {{ message }} </strong></p>
     </div>
   </div>
 </template>
@@ -256,20 +253,14 @@
 <script>
 import { mapGetters } from 'vuex';
 import axios from 'axios';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 export default {
   setup() {
-    const store = useStore();
-    const router = useRouter();
-    const logout = async () => {
-      await store.dispatch('logout');
-      router.push('/login');
-    };
+    const toast = useToast();
 
     return {
-      logout,
+      toast,
     };
   },
   computed: {
@@ -315,10 +306,17 @@ export default {
     };
   },
   mounted() {
+    this.toast = useToast();
     this.fetchUserGroups();
     this.fetchPublicGroups();
   },
   methods: {
+    async logout() {
+      this.$store.dispatch('logout');
+      this.$router.push('/login');
+      this.toast.success('You have logged out successfully.');
+    },
+
     setMessage(message, type) {
       this.message = message;
       this.messageClass = type;
@@ -356,19 +354,16 @@ export default {
             password: this.form.oldPassword  // This should be sent as 'password'
           });
 
-          // Check the response to see if the old password is correct
-          console.log('Password check response:', passwordMatchResponse);
-
           // If the password is incorrect, show an error
           if (passwordMatchResponse.status !== 200) {
-            this.setMessage('Old password is incorrect.', 'error');
+            this.toast.error('Old password is incorrect.');
             return;
           }
         }
 
         // Proceed with other checks for password and form fields
         if (this.form.newPassword !== this.form.confirmPassword) {
-          this.setMessage('New password and confirm password do not match.', 'error');
+          this.toast.error('New passwords do not match.');
           return;
         }
 
@@ -396,7 +391,7 @@ export default {
         this.editing = false;  // Exit edit mode
       } catch (error) {
         console.error('Error updating account:', error); 
-        this.setMessage(error.response?.data?.message || 'An error occurred while updating the account', 'error');
+        this.toast.error('An error occurred while updating the account');
       }
     },
     async deleteAccount() {
@@ -411,7 +406,7 @@ export default {
           }
         } catch (error) {
           console.error("Error deleting account:", error);
-          this.setMessage('Failed to delete account. Please try again.', 'error');
+          this.toast.error('Failed to delete account. Please try again.');
         }
       }
     },
@@ -444,23 +439,23 @@ export default {
     async createGroup() {
       try {
         await axios.post('/groups', { name: this.name, description: this.description, is_public: this.isPublic });
-        this.setMessage('Group created successfully!', 'success');
+        this.toast.success('Group created successfully!');
         this.name = '';
         this.description = '';
         this.isPublic = true;
         this.fetchUserGroups();
       } catch (error) {
-        this.setMessage('Error creating group.', 'error');
+        this.toast.error('Error creating group. Please try again.');
       }
     },
     async joinGroup(groupId) {
       try {
         await axios.post(`/groups/join/${groupId}`);
-        this.setMessage('You have joined the group!', 'success');
+        this.toast.success('You have joined the group!');
         this.fetchUserGroups();
         this.fetchAvailableGroups();
       } catch (error) {
-        this.setMessage('Error joining group.', 'error');
+        this.toast.error('Error joining group. Please try again.');
       }
     },
     async leaveGroup(groupId) {
@@ -471,32 +466,32 @@ export default {
         
         if (response.data.message.includes('the group has been deleted')){
           this.setMessage(response.data.message, 'success');
+          this.toast.success(response.data.message);
           this.groups = this.groups.filter(group => group.id !== groupId);
         } else {
-          this.setMessage('You have left the group!', 'success');
+          this.toast.success('You have left the group!');
           this.groups.find(group => group.id === groupId).members = this.groups.find(group => group.id === groupId).members.filter(member => member.username !== this.username);
         }
       } catch (error) {
-        this.setMessage('Error leaving group.', 'error');
+        this.toast.error('Error leaving group. Please try again.');
       }
     },
     async searchGroups() {
       try {
         const response = await axios.get(`/groups/search?query=${this.searchQuery}`);
-        console.log("Response from server:", response.data);
         this.availableGroups = response.data;
       } catch (error) {
-        this.setMessage('Error searching groups.', 'error');
+        this.toast.error('Error searching groups. Please try again.');
       }
     },
     async deleteGroup(groupId) {
       try {
         await axios.delete(`/groups/${groupId}`);
-        this.setMessage('Group deleted successfully!', 'success');
+        this.toast.success('Group deleted successfully!');
         this.fetchUserGroups();
         this.fetchAvailableGroups();
       } catch (error) {
-        this.setMessage('Error deleting group.', 'error');
+        this.toast.error('Error deleting group. Please try again.');
       }
     },
   },

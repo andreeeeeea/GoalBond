@@ -28,6 +28,7 @@
   
   <script>
   import { mapActions } from 'vuex';
+  import { useToast } from 'vue-toastification';
   
   export default {
     data() {
@@ -43,12 +44,14 @@
         try {
           await this.login({ username: this.username, password: this.password });
           this.$router.push('/'); // Redirect to home on successful login
+          this.toast.success('Login successful');
         } catch (error) {
           this.errorMessage = 'Invalid username or password';
         }
       },
     },
-    mounted() {
+    async mounted() {
+      this.toast = useToast();
       if (this.$store.state.isAuthenticated) {
         this.$router.push('/');
       }

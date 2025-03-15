@@ -1,7 +1,7 @@
 <template>
   <notifications group="foo" />
   <div id="app" class="min-h-screen bg-[#FEFEFD] flex flex-col">
-    <Navbar class="sticky top-0 z-50"/>
+    <Navbar/>
     <main class="flex-grow pt-4">
       <router-view />
     </main>
