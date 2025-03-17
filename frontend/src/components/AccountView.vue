@@ -397,7 +397,7 @@ export default {
     async deleteAccount() {
       if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
         try {
-          const response = await this.$axios.delete('http://localhost:5000/delete_account');
+          const response = await axios.delete('/delete_account');
           if (response.data.success) {
             alert(response.data.message); 
             window.location.href = "/";  

@@ -171,7 +171,7 @@ export default {
       }
     },
     fetchUserGroups() {
-      axios.get('http://localhost:5000/groups/mine')
+      axios.get('/groups/mine')
         .then(response => {
           this.groups = response.data;
         })
@@ -180,7 +180,7 @@ export default {
         });
     },
     fetchAvailableGroups() {
-      axios.get('http://localhost:5000/groups/not-mine')
+      axios.get('/groups/not-mine')
         .then(response => {
           this.availableGroups = response.data;
         })
@@ -189,7 +189,7 @@ export default {
         });
     },
     joinGroup(groupId) {
-      axios.post(`http://localhost:5000/groups/join/${groupId}`)
+      axios.post(`/groups/join/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
@@ -206,7 +206,7 @@ export default {
         });
     },
     leaveGroup(groupId) {
-      axios.post(`http://localhost:5000/groups/leave/${groupId}`)
+      axios.post(`/groups/leave/${groupId}`)
         .then(response => {
           this.successMessage = response.data.message;
           this.errorMessage = '';
@@ -244,7 +244,7 @@ export default {
     },
     searchGroups() {
       if(this.searchQuery.trim() === '') {
-        axios.get('http://localhost:5000/groups/not-mine')
+        axios.get('/groups/not-mine')
           .then(response => {
             this.availableGroups = response.data;
           })
@@ -252,7 +252,7 @@ export default {
             console.error('Error searching groups:', error);
         });
       } else {
-          axios.get(`http://localhost:5000/groups/search?query=${this.searchQuery}`)
+          axios.get(`/groups/search?query=${this.searchQuery}`)
           .then(response => {
             this.availableGroups = response.data;
             this.currentView = 'joinGroups';

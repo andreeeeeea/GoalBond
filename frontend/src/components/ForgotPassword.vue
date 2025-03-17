@@ -33,7 +33,7 @@
         try {
           console.log(`Sending reset link for email: ${this.email}`); 
   
-          const response = await axios.post('http://localhost:5000/forgot_password', {
+          const response = await axios.post('/forgot_password', {
             email: this.email
           });
   

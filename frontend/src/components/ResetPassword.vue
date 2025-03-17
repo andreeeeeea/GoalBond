@@ -42,8 +42,7 @@
             const token = this.$route.query.token;
             console.log("hewwo", this.$route.query.token); 
             try {
-            console.log(this.$axios);
-            const response = await this.$axios.post(`http://localhost:5000/reset_password/${token}`, {
+            const response = await axios.post(`/reset_password/${token}`, {
                 password: this.password
             });
 

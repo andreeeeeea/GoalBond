@@ -69,7 +69,7 @@ export default {
   methods: {
     async addUser() {
       try {
-        const response = await axios.post('http://localhost:5000/signup', {
+        const response = await axios.post('/signup', {
           username: this.username,
           email: this.email,
           password: this.password
