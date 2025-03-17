@@ -2,7 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL; // Set the base URL for all requests
+axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
 export default createStore({
   state: {

@@ -593,7 +593,7 @@ def reset_password(token):
                 print(f"No user found for the email {email} in reset_password route.") 
                 return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
 
-            return redirect("http://localhost:8080/reset_password?token=" + token)
+            return redirect("/reset_password?token=" + token)
 
         elif request.method == 'POST':
             try:
