@@ -9,7 +9,11 @@ You can access it here: https://goalbond.netlify.app/
 
 ###
 
-### This platform is still in its developmental stage. I am actively working on it, but it is mostly finished, backend wise.
+This platform is still in its developmental stage. I am actively working on it, but it is mostly finished, backend wise.
+
+If it takes a bit for it to register your request, that is because I'm using the free tier of Render to host the backend. 
 
 ### 
+
+
 
