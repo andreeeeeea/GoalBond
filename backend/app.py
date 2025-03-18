@@ -34,11 +34,10 @@ app.config['MAIL_DEFAULT_SENDER'] = 'goalbondbot@gmail.com'
 
 # Cookies
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='None',  # Required for cross-site requests
+    SESSION_COOKIE_SECURE=True,         
+    SESSION_COOKIE_HTTPONLY=True,       
+    SESSION_COOKIE_SAMESITE='None',    
     PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=7),
-    SESSION_COOKIE_DOMAIN='.goalbond.com'  # Match your backend domain
 )
 
 mail = Mail(app)
