@@ -1,8 +1,6 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
-console.log('API URL:', process.env.VUE_APP_API_URL);
-
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
@@ -14,8 +12,7 @@ export default createStore({
   mutations: {
     SET_USER(state, user) {
       state.user = user;
-      state.isAuthenticated = !!user;  // Set authentication status
-      console.log('Setting isAuthenticated to:', state.isAuthenticated);
+      state.isAuthenticated = !!user;
     }
   },
   actions: {
@@ -32,7 +29,7 @@ export default createStore({
     async logout({ commit }) {
       try {
         await axios.post('/logout');
-        commit('SET_USER', null); // Clear user data on logout
+        commit('SET_USER', null);
       } catch (error) {
         console.error('Logout error:', error);
       }
@@ -41,12 +38,14 @@ export default createStore({
       try {
         const response = await axios.get('/check-auth');
         if (response.data.authenticated) {
-          commit('SET_USER', response.data.user); // Update user data if authenticated
+          commit('SET_USER', response.data.user);
         } else {
           commit('SET_USER', null);
         }
       } catch (error) {
-        console.error('Check auth error:', error);
+        if (error.response?.status !== 401) {
+          console.error('Unexpected authentication error:', error);
+        }
         commit('SET_USER', null);
       }
     }
