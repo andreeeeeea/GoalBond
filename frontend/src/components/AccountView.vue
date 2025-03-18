@@ -364,7 +364,8 @@ export default {
         }
 
         const response = await axios.put('/update-user', updatedFields);
-
+        
+        console.log('Account updated:', response.data);
         this.toast.success('Account updated successfully.');
         this.editing = false; 
       } catch (error) {
