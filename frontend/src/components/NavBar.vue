@@ -63,6 +63,26 @@ export default {
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const username = computed(() => store.getters.getUsername || '');
 
+
+    onMounted(async () => {
+      try {
+        await store.dispatch('checkAuth');
+      } catch (error) {
+        console.error('Failed to check authentication:', error);
+      }
+    });
+
+    const goToProtectedRoute = async (route) => {
+      if (!isAuthenticated.value) {
+        await store.dispatch('checkAuth');
+        if (!isAuthenticated.value) {
+          router.push('/login');
+          return;
+        }
+      }
+      router.push(route);
+    };
+
     const goToLogin = () => {
       router.push('/login');
     };
