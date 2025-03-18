@@ -202,6 +202,7 @@ export default {
         })
         .catch(error => {
           this.toast.error('An error occurred while leaving the group.');
+          console.log('Error leaving group:', error);
         });
     },
     createGroup() {

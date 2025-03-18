@@ -381,6 +381,8 @@ export default {
             alert(response.data.message); 
             window.location.href = "/";  
           } else {
+            console.log('Error deleting account:', response.data.message);
+            this.toast.error('Failed to delete account. Please try again.');
           }
         } catch (error) {
           console.error("Error deleting account:", error);
@@ -393,6 +395,11 @@ export default {
         const response = await axios.get('/groups/mine');
         this.groups = response.data;
       } catch (error) {
+        if (error.response?.status === 401) {
+          this.groups = [];
+        } else {
+          console.log('Error fetching user groups:', error);
+        }
       }
     },
     async fetchPublicGroups() {
@@ -402,6 +409,11 @@ export default {
           (group) => group.is_public && group.members.some((member) => member.username === this.username)
         );
       } catch (error) {
+        if(error.response?.status === 401) {
+          this.publicGroups = [];
+        } else {
+          console.error('Error fetching public groups:', error);
+        }
       }
     },
     async fetchAvailableGroups() {
@@ -409,6 +421,11 @@ export default {
         const response = await axios.get('/groups/not-mine');
         this.availableGroups = response.data;
       } catch (error) {
+        if (error.response?.status === 401) {
+          this.availableGroups = [];
+        } else {
+          console.error('Error fetching available groups:', error);
+        }
       }
     },
     async createGroup() {
