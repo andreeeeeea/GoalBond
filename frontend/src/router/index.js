@@ -12,32 +12,6 @@ import TermsView from '@/components/TermsView.vue';
 import PrivacyView from '@/components/PrivacyView.vue';
 import store from '../store';
 
-router.beforeEach(async (to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.state.isAuthenticated) {
-      try {
-        await store.dispatch('checkAuth');
-        
-        if (!store.state.isAuthenticated) {
-          next({ 
-            name: 'login',
-            query: { redirect: to.fullPath }
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        next({ 
-          name: 'login',
-          query: { redirect: to.fullPath }
-        });
-        return;
-      }
-    }
-  }
-  next();
-});
-
 const routes = [
   {
     path: '/',
@@ -111,14 +85,30 @@ const router = createRouter({
 });
 
 // Route Guard
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('user') !== null; // Check if user is authenticated
-
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'login' }); // Redirect to login if not authenticated
-  } else {
-    next();
+router.beforeEach(async (to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.state.isAuthenticated) {
+      try {
+        await store.dispatch('checkAuth');
+        
+        if (!store.state.isAuthenticated) {
+          next({ 
+            name: 'login',
+            query: { redirect: to.fullPath }
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        next({ 
+          name: 'login',
+          query: { redirect: to.fullPath }
+        });
+        return;
+      }
+    }
   }
+  next();
 });
 
 export default router;
