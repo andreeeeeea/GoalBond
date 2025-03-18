@@ -10,6 +10,33 @@ import ResetPassword from '@/components/ResetPassword.vue';
 import ContactView from '@/components/ContactView.vue';
 import TermsView from '@/components/TermsView.vue';
 import PrivacyView from '@/components/PrivacyView.vue';
+import store from '../store';
+
+router.beforeEach(async (to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.state.isAuthenticated) {
+      try {
+        await store.dispatch('checkAuth');
+        
+        if (!store.state.isAuthenticated) {
+          next({ 
+            name: 'login',
+            query: { redirect: to.fullPath }
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        next({ 
+          name: 'login',
+          query: { redirect: to.fullPath }
+        });
+        return;
+      }
+    }
+  }
+  next();
+});
 
 const routes = [
   {
@@ -58,6 +85,7 @@ const routes = [
   {
     path: '/group/:groupId/owner',
     name: 'group_owner',
+    meta: { requiresAuth: true },
     props: true
   },
   {
