@@ -16,9 +16,6 @@
           <p class="text-center">Forgot your password? <router-link to="/forgot_password" class="text-blue-500">Reset Password</router-link></p>
       </div>
     </div>
-    <div class="flex justify-center">
-      <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
-    </div>
   </div>
 </template>
 
@@ -35,7 +32,6 @@
       return {
         username: '',
         password: '',
-        errorMessage: '',
       };
     },
     methods: {
@@ -43,10 +39,10 @@
       async handleLogin() {
         try {
           await this.login({ username: this.username, password: this.password });
-          this.$router.push('/'); // Redirect to home on successful login
+          this.$router.push('/'); 
           this.toast.success('Login successful');
         } catch (error) {
-          this.errorMessage = 'Invalid username or password';
+          this.toast.error('Invalid username or password');
         }
       },
     },

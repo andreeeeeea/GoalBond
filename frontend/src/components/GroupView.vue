@@ -121,17 +121,8 @@
           >
             Create Group
           </button>
-          <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
-          <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
         </form>
       </div>
-    </div>
-
-    <div v-if="successMessage" class="text-green-500 text-center mt-4">
-      {{ successMessage }}
-    </div>
-    <div v-if="errorMessage" class="text-red-500 text-center mt-4">
-      {{ errorMessage }}
     </div>
   </div>
 </template>
@@ -140,6 +131,7 @@
 import axios from 'axios';
 import { useStore } from 'vuex';
 import { computed } from 'vue';
+import { useToast } from 'vue-toastification';
 
 export default {
   setup() {
@@ -154,14 +146,13 @@ export default {
       name: '',
       description: '',
       isPublic: true,
-      successMessage: '',
-      errorMessage: '',
       currentView: 'myGroups',
       searchQuery: ''
     };
   },
   mounted() {
     this.fetchUserGroups();
+    this.toast = useToast();
   },
   methods: {
     setView(view) {
@@ -191,8 +182,7 @@ export default {
     joinGroup(groupId) {
       axios.post(`/groups/join/${groupId}`)
         .then(response => {
-          this.successMessage = response.data.message;
-          this.errorMessage = '';
+          this.toast.success(response.data.message);
           const joinedGroup = this.availableGroups.find(group => group.id === groupId);
           if (joinedGroup) {
             this.groups.push(joinedGroup);
@@ -200,22 +190,18 @@ export default {
           }
          })
          .catch(error => {
-          this.errorMessage = error.response.data.message || 'An error occurred while joining the group.';
-          this.successMessage = '';
+          this.toast.error('An error occurred while joining the group.');
           console.error('Error joining group:', error);
         });
     },
     leaveGroup(groupId) {
       axios.post(`/groups/leave/${groupId}`)
         .then(response => {
-          this.successMessage = response.data.message;
-          this.errorMessage = '';
+          this.toast.success(response.data.message);
           this.fetchUserGroups();
         })
         .catch(error => {
-          this.errorMessage = error.response.data.message || 'An error occurred while leaving the group.';
-          this.successMessage = '';
-          console.error('Error leaving group:', error);
+          this.toast.error('An error occurred while leaving the group.');
         });
     },
     createGroup() {
@@ -229,17 +215,16 @@ export default {
         is_public: this.isPublic
       })
       .then(() => {
-        this.successMessage = 'Group created successfully!';
+        this.toast.success('Group created successfully!');
         this.name = '';
         this.description = '';
         this.isPublic = true;
-        this.errorMessage = '';
         this.fetchUserGroups();
         this.setView('myGroups');
       })
       .catch(error => {
-        this.errorMessage = error.response && error.response.data.message ? error.response.data.message : 'An error occurred';
-        this.successMessage = '';
+        this.toast.error('An error occurred while creating the group.');
+        console.error('Error creating group:', error);
       });
     },
     searchGroups() {
@@ -258,7 +243,6 @@ export default {
             this.currentView = 'joinGroups';
           })
           .catch(error => {
-            this.errorMessage = 'An error occurred while searching for groups.';
             console.error('Error searching groups:', error);
           });
       }

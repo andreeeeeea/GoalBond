@@ -212,7 +212,6 @@ export default {
         const response = await axios.get('/user');
         this.userGroups = response.data.groups;
       } catch (error) {
-        console.error('Error fetching user groups:', error);
       }
     },
   },

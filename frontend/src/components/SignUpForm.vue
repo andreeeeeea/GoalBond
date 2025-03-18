@@ -36,8 +36,6 @@
         >
           Sign Up
         </button>
-        <div v-if="successMessage" class="text-green-500 text-center mt-2">{{ successMessage }}</div>
-        <div v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</div>
       </form>
       <div class="my-4">
           <p class="text-center">Already have an account? <router-link to="/login" class="text-blue-500">Log In</router-link></p>
@@ -57,8 +55,6 @@ export default {
       username: '',
       email: '',
       password: '',
-      errorMessage: '',
-      successMessage: ''
     };
   },
   computed: {
@@ -75,24 +71,22 @@ export default {
           password: this.password
         });
         console.log('User added:', response.data);
-        this.successMessage = 'User successfully added!';
         
         // Clear input fields
         this.username = '';
         this.email = '';
         this.password = '';
-        this.errorMessage = '';  // Clear error message if successful
         
         // Redirect to login page
         this.$router.push('/login');
-        this.toast.success('Successfully signed up! Please check your email to verify your account.');
+        this.toast.success('Successfully signed up! Please log in.');
       } catch (error) {
         console.error('Error adding user:', error);
         this.toast.error('Error signing up. Please try again.');
         if (error.response && error.response.data) {
-          this.errorMessage = error.response.data.message; // Set the error message returned from the backend
+          this.toast.error(error.response.data.message);
         } else {
-          this.errorMessage = 'An unexpected error occurred. Please try again.'; // General error message
+          this.toast.error('Error signing up. Please try again.');
         }
       }
     }

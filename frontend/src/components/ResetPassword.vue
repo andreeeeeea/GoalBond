@@ -20,9 +20,6 @@
             Reset Password
           </button>
         </form>
-        <div class="my-4 flex items-center justify-center">
-            <p v-if="message" :class="messageClass" class="mt-2 text-center">{{ message }}</p>
-        </div>
       </div>
 
     </div>
@@ -30,38 +27,35 @@
   
 <script>
 import axios from 'axios';
+import { useToast } from 'vue-toastification';
 
   export default {
     data() {
       return {
         password: '',
-        message: '',
-        messageClass: ''
       };
     },
     methods: {
         async resetPassword() {
             const token = this.$route.query.token;
-            console.log("hewwo", this.$route.query.token); 
             try {
             const response = await axios.post(`/reset_password/${token}`, {
                 password: this.password
             });
 
             if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = 'success';
+                this.toast.success(response.data.message);
                 this.password = ''; 
             } else {
-                this.errorMessage = response.data.message;
-                this.messageClass = 'error';
+                this.toast.error(response.data.message);
             }
             } catch (error) {
-            console.error('Password reset failed:', error);
-            this.message = 'An error occurred. Please try again.';
-            this.messageClass = 'error';
+              this.toast.error('An error occurred. Please try again.');
             }
         }
+    },
+    mounted() {
+        this.toast = useToast();
     }
   };
 </script>

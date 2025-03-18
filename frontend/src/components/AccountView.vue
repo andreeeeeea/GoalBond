@@ -291,8 +291,6 @@ export default {
       description: '',
       isPublic: true,
       publicGroups: [],
-      message: '',
-      messageClass: '',
       searchQuery: '',
       form: {
         nickname: this.getNickname,
@@ -316,15 +314,6 @@ export default {
       this.$router.push('/login');
       this.toast.success('You have logged out successfully.');
     },
-
-    setMessage(message, type) {
-      this.message = message;
-      this.messageClass = type;
-
-      setTimeout(() => {
-        this.message = '';
-      }, 3000);
-    },
     
     setView(view) {
       this.currentView = view;
@@ -345,29 +334,22 @@ export default {
       try {
         const updatedFields = {};
 
-        // Log the request data to inspect it
-        console.log('Form data being sent:', this.form);
-
-        // Check if the old password is provided
         if (this.form.oldPassword) {
           const passwordMatchResponse = await axios.post('/check-password', {
             password: this.form.oldPassword  // This should be sent as 'password'
           });
 
-          // If the password is incorrect, show an error
           if (passwordMatchResponse.status !== 200) {
             this.toast.error('Old password is incorrect.');
             return;
           }
         }
 
-        // Proceed with other checks for password and form fields
         if (this.form.newPassword !== this.form.confirmPassword) {
           this.toast.error('New passwords do not match.');
           return;
         }
 
-        // Other form update fields (username, email, etc.)
         if (this.form.nickname !== this.getNickname) {
           updatedFields.nickname = this.form.nickname;
         }
@@ -381,14 +363,10 @@ export default {
           updatedFields.password = this.form.newPassword;
         }
 
-        console.log('Fields being updated:', updatedFields);
-
-        // Send the update request
         const response = await axios.put('/update-user', updatedFields);
-        console.log('Account update response:', response);
 
-        this.setMessage(response.data.message, 'success');
-        this.editing = false;  // Exit edit mode
+        this.toast.success('Account updated successfully.');
+        this.editing = false; 
       } catch (error) {
         console.error('Error updating account:', error); 
         this.toast.error('An error occurred while updating the account');
@@ -402,7 +380,6 @@ export default {
             alert(response.data.message); 
             window.location.href = "/";  
           } else {
-            this.setMessage(response.data.message, 'error');
           }
         } catch (error) {
           console.error("Error deleting account:", error);
@@ -415,7 +392,6 @@ export default {
         const response = await axios.get('/groups/mine');
         this.groups = response.data;
       } catch (error) {
-        console.error('Error fetching user groups:', error);
       }
     },
     async fetchPublicGroups() {
@@ -425,7 +401,6 @@ export default {
           (group) => group.is_public && group.members.some((member) => member.username === this.username)
         );
       } catch (error) {
-        console.error('Error fetching public groups:', error);
       }
     },
     async fetchAvailableGroups() {
@@ -433,7 +408,6 @@ export default {
         const response = await axios.get('/groups/not-mine');
         this.availableGroups = response.data;
       } catch (error) {
-        console.error('Error fetching available groups:', error);
       }
     },
     async createGroup() {
@@ -459,13 +433,10 @@ export default {
       }
     },
     async leaveGroup(groupId) {
-      console.log("Group to leave", groupId);
-      console.log("User that leaves", this.username);
       try {
         const response = await axios.post(`/groups/${groupId}/leave`);
         
         if (response.data.message.includes('the group has been deleted')){
-          this.setMessage(response.data.message, 'success');
           this.toast.success(response.data.message);
           this.groups = this.groups.filter(group => group.id !== groupId);
         } else {

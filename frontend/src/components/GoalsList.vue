@@ -192,7 +192,7 @@
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
                     <div class="flex items-center justify-left ml-2 mb-2">
                       <button
-                        class="text-gray-600 hover:bg-gray-100 font-bold rounded w-auto text-sm block w-full"
+                        class="text-gray-600 hover:bg-gray-100 font-bold rounded text-sm block w-full"
                         @click="toggleGoalCompletion(goal)"
                       >
                         Mark as Completed
@@ -200,7 +200,7 @@
                     </div>
                     <div class="flex items-center justify-left ml-2">
                       <button
-                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
                         @click="deleteGoal(goal.id)"
                       >
                         Delete Goal
@@ -255,7 +255,7 @@
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
                     <div class="flex items-center justify-left ml-2 mb-2">
                       <button 
-                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
                         @click="redoGoal(goal)"
                         >
                         Re-Do Goal
@@ -263,7 +263,7 @@
                     </div>
                     <div class="flex items-center justify-left ml-2">
                       <button
-                        class="text-gray-600 hover:text-black font-bold rounded w-auto text-sm block w-full"
+                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
                         @click="deleteGoal(goal.id)"
                       >
                         Delete Goal

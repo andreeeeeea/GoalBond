@@ -11,7 +11,6 @@
       </form>
       <div class="my-4">
         <p class="text-center">Don't have an account? <router-link to="/signup" class="text-blue-500">Sign Up</router-link></p>
-        <p v-if="message" :class="messageClass" class="mt-2 text-center">{{ message }}</p>
       </div>
     </div>
   </div>
@@ -24,8 +23,6 @@
     data() {
       return {
         email: '',
-        message: '',
-        messageClass: ''
       };
     },
     methods: {
@@ -37,14 +34,10 @@
             email: this.email
           });
   
-          console.log(`Response from server:`, response.data); 
-  
-          this.message = response.data.message;
-          this.messageClass = response.data.success ? 'success' : 'error';
+          console.log("Reset link sent:", response.data);  
         } catch (error) {
           console.error("Error sending reset link:", error); 
-          this.message = 'An error occurred. Please try again.';
-          this.messageClass = 'error';
+          this.toast.error('An error occurred. Please try again.');
         }
       }
     }
