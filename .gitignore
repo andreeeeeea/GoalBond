@@ -2,3 +2,4 @@ venv
 backend/.env
 .env.development
 .env.*.local
+frontend/.env
