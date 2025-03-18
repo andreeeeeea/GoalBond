@@ -1,7 +1,7 @@
 import datetime
 from dotenv import load_dotenv
 import os
-from flask import Flask, jsonify, request, render_template, redirect, url_for, flash
+from flask import Flask, jsonify, request, render_template, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -30,6 +30,16 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = 'goalbondbot@gmail.com' 
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  
 app.config['MAIL_DEFAULT_SENDER'] = 'goalbondbot@gmail.com'  
+
+
+# Cookies
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='None',  # Required for cross-site requests
+    PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=7),
+    SESSION_COOKIE_DOMAIN='.onrender.com'  # Match your backend domain
+)
 
 mail = Mail(app)
 
@@ -122,6 +132,7 @@ def login():
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         login_user(user)
+        session.permanent = True
         return jsonify({
             "message": "Login successful",
             "user": {
@@ -166,6 +177,7 @@ def delete_account():
 @app.route('/check-auth', methods=['GET'])
 def check_auth():
     if current_user.is_authenticated:
+        session.permanent = True
         return jsonify({
             "authenticated": True,
             "user": {
