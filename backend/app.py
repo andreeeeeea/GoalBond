@@ -38,7 +38,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='None',  # Required for cross-site requests
     PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=7),
-    SESSION_COOKIE_DOMAIN='.onrender.com'  # Match your backend domain
+    SESSION_COOKIE_DOMAIN='.goalbond.com'  # Match your backend domain
 )
 
 mail = Mail(app)
@@ -131,7 +131,7 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
-        login_user(user)
+        login_user(user, remember=True)
         session.permanent = True
         return jsonify({
             "message": "Login successful",
