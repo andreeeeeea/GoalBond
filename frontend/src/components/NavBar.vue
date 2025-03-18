@@ -51,19 +51,19 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router'; 
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
     const store = useStore();
-    const router = useRouter(); 
+    const router = useRouter();
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
     const username = computed(() => store.getters.getUsername || '');
 
-
+    // Check auth status on component mount
     onMounted(async () => {
       try {
         await store.dispatch('checkAuth');
@@ -83,25 +83,11 @@ export default {
       router.push(route);
     };
 
-    const goToLogin = () => {
-      router.push('/login');
-    };
-
-    const goToSignup = () => {
-      router.push('/signup');
-    };
-
-    const goToGoals = () => {
-      router.push('/goals');
-    };
-
-    const goToGroups = () => {
-      router.push('/groups');
-    };
-
-    const goToAccount = () => {
-      router.push('/account');
-    };
+    const goToLogin = () => router.push('/login');
+    const goToSignup = () => router.push('/signup');
+    const goToGoals = () => goToProtectedRoute('/goals');
+    const goToGroups = () => goToProtectedRoute('/groups');
+    const goToAccount = () => goToProtectedRoute('/account');
 
     return {
       isAuthenticated,
