@@ -1,6 +1,8 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
+console.log('API URL:', process.env.VUE_APP_API_URL);
+
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
