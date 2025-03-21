@@ -1,7 +1,7 @@
 <template>
   <div class="home-view relative flex flex-col items-center justify-center">
     <section class="flex items-center">
-      <div class="flex items-start w-1/2 ml-64 pr-32">
+      <div class="flex items-start w-1/2 ml-64">
         <section class="relative z-10 flex flex-col justify-start items-start w-full space-y-6 text-left py-28">
           <div class="text-5xl my-1 typing-text">
             <span class="caveat-font text-gray-800">I want to... </span>
