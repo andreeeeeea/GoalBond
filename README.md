@@ -11,7 +11,12 @@ You can access it here: https://goalbond.netlify.app/
 
 This platform is still in its developmental stage. I am actively working on it, but it is mostly finished, backend wise.
 
-If it takes a bit for it to register your request, that is because I'm using the free tier of Render to host the backend. 
+If it takes a bit for it to register your request, that's because I'm using the free tiers of Render and Netlify to host the website. 
+
+### TO DO:
+1. Add functionality to the add group button (the one from the Account page works).
+2. Revamp account page.
+3. Add functionality for users to invite other users to their private groups - currently, that is not implemented.
 
 ### 
 
