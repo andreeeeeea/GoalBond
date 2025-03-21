@@ -59,11 +59,11 @@
           </div>
 
           <div class="mb-4">
-            <input v-model="title" type="text" placeholder="Goal Title" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input v-model="title" type="text" placeholder="Goal Title" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82]" />
           </div>
 
           <div class="mb-4">
-            <textarea v-model="description" placeholder="Description" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+            <textarea v-model="description" placeholder="Description" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82]"></textarea>
           </div>
 
           <div class="mb-4">
@@ -95,8 +95,8 @@
           </div>
 
           <div class="flex justify-between space-x-2">
-            <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">Add Goal</button>
-            <button @click="showForm = false" type="button" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">Cancel</button>
+            <button type="submit" class="bg-[#D76C82] hover:bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg transition duration-300">Add Goal</button>
+            <button @click="showForm = false" type="button" class="border-4 border-[#D76C82] text-[#D76C82] font-bold py-2 px-4 rounded-lg hover:bg-[#B03052] hover:border-[#B03052] hover:text-white transition duration-300">Cancel</button>
           </div>
         </form>
       </div>
@@ -111,7 +111,7 @@
               v-model="name"
               type="text"
               placeholder="Group Name"
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82]"
               required
             />
           </div>
@@ -120,7 +120,7 @@
             <textarea
               v-model="description"
               placeholder="Group Description"
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none h-32"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82] resize-none h-32"
             ></textarea>
           </div>
 
@@ -128,7 +128,7 @@
             <label class="block mb-2">Group Privacy:</label>
             <select 
               v-model="isPublic" 
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82]"
             >
               <option :value="true">Public</option>
               <option :value="false">Private</option>
@@ -136,19 +136,8 @@
           </div>
 
           <div class="flex justify-between space-x-2">
-            <button 
-              type="submit" 
-              class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300"
-            >
-              Create Group
-            </button>
-            <button 
-              @click="showGroupForm = false" 
-              type="button" 
-              class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300"
-            >
-              Cancel
-            </button>
+            <button type="submit" class="bg-[#D76C82] hover:bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg transition duration-300"> Create Group </button>
+            <button @click="showGroupForm = false" type="button" class="border-4 border-[#D76C82] text-[#D76C82] font-bold py-2 px-4 rounded-lg hover:bg-[#B03052] hover:border-[#B03052] hover:text-white transition duration-300"> Cancel </button>
           </div>
         </form>
       </div>

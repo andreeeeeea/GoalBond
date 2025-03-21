@@ -47,7 +47,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Update CORS configuration to allow specific methods without preflight
 CORS(app, resources={r"/*": {
-    "origins": ["https://goalbond.netlify.app"], 
+    "origins": ["https://goalbond.netlify.app", "http://192.168.0.144:8080/", "http://localhost:8080"], # Remove the last two when done - FOR DEBUGGING.
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Content-Type", "Authorization"],
     "supports_credentials": True,

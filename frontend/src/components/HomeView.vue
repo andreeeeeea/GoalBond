@@ -64,7 +64,7 @@
             1
           </div>
           <p class="text-lg font-semibold text-center">Create Account</p>
-          <p class="text-gray-600 text-center">Sign up easily to get started with your goals.</p>
+          <p class="text-gray-600 text-center">Sign up today to get started with your goals!</p>
         </div>
 
         <div class="flex items-center">
