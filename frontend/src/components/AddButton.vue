@@ -103,33 +103,50 @@
     </div>
 
     <div v-if="showGroupForm" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm z-[9999]">
-      <div class="bg-white rounded-lg p-6 w-96">
-        <h2 class="text-2xl font-semibold mb-4">Create a Group</h2>
+      <div class="max-w-lg w-full p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4 text-center">Create New Group</h2>
         <form @submit.prevent="createGroup">
-          <input
-            v-model="name"
-            type="text"
-            placeholder="Group Name"
-            class="border border-gray-300 rounded-lg p-2 w-full mb-4"
-            required
-          />
-          <textarea
-            v-model="description"
-            placeholder="Group Description"
-            class="border border-gray-300 rounded-lg p-2 w-full mb-4 resize-none h-32"
-          ></textarea>
+          <div class="mb-4">
+            <input
+              v-model="name"
+              type="text"
+              placeholder="Group Name"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <textarea
+              v-model="description"
+              placeholder="Group Description"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none h-32"
+            ></textarea>
+          </div>
+
           <div class="mb-4">
             <label class="block mb-2">Group Privacy:</label>
-            <select v-model="isPublic" class="border border-gray-300 rounded-lg p-2 w-full">
+            <select 
+              v-model="isPublic" 
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
               <option :value="true">Public</option>
               <option :value="false">Private</option>
             </select>
           </div>
+
           <div class="flex justify-between space-x-2">
-            <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+            <button 
+              type="submit" 
+              class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300"
+            >
               Create Group
             </button>
-            <button @click="showGroupForm = false" type="button" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">
+            <button 
+              @click="showGroupForm = false" 
+              type="button" 
+              class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300"
+            >
               Cancel
             </button>
           </div>

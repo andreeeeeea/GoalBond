@@ -482,8 +482,10 @@ export default {
         .then(response => {
           this.goals.push(response.data);
           this.fetchGoals();
+          this.toast.success('Goal re-added!');
         })
         .catch(error => {
+          this.toast.error('Error re-adding goal.');
           console.error("Error redoing goal:", error);
         });
     },
@@ -492,7 +494,9 @@ export default {
       try {
         goal.completed = !goal.completed;
         await axios.put(`/goals/${goal.id}`, { completed: goal.completed });
+        this.toast.success('Goal completed! Congratulations!');
       } catch (error) {
+        this.toast.error('Error toggling goal completion.');
         console.error('Error toggling goal completion:', error);
       }
     },
@@ -529,11 +533,13 @@ export default {
     },
 
     async fetchGoals() {
+      this.toast.info('Fetching goals...');
       try {
         const response = await axios.get('/goals');
         this.goals = response.data;
       } catch (error) {
         console.error('Error fetching goals:', error);
+        this.toast.error('Error fetching goals.');
       }
     },
 
@@ -543,6 +549,7 @@ export default {
         this.groups = response.data;
       } catch (error) {
         console.error('Error fetching groups:', error);
+        this.toast.error('Error fetching groups.');
       }
     },
 
