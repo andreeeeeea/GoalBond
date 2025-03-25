@@ -86,7 +86,7 @@
 
           <div class="mb-4">
             <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
-            <label for="hasDeadline">Add Deadline?</label>
+            <label for="hasDeadline"> Add Deadline?</label>
           </div>
 
           <div v-if="hasDeadline" class="mb-4">
