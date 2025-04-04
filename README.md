@@ -17,6 +17,7 @@ If it takes a bit for it to register your request, that's because I'm using the 
 1. ~~Add functionality to the add group button (the one from the Account page works).~~ ADDED! 
 2. Revamp account page. - In progres...
 3. Add functionality for users to invite other users to their private groups - currently, that is not implemented.
+4. Add responsize design (i.e. make the website look nice on mobiles, currently it looks... eh)
 
 ### 
 
