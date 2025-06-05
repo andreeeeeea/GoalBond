@@ -13,6 +13,8 @@ This platform is still in its developmental stage. I am actively working on it, 
 
 If it takes a bit for it to register your request, that's because I'm using the free tiers of Render and Netlify to host the website. 
 
+The backend may go down at times, IF the supabase database goes inactive - if that is the case, I'll start up the database again.
+
 ### TO DO:
 1. ~~Add functionality to the add group button (the one from the Account page works).~~ ADDED! 
 2. Revamp account page. - In progres...
