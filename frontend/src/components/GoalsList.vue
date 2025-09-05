@@ -378,6 +378,11 @@ import { useToast } from "vue-toastification";
 
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+  
   props: {
     goal: {
       type: Object,
@@ -533,7 +538,6 @@ export default {
     },
 
     async fetchGoals() {
-      this.toast.info('Fetching goals...');
       try {
         const response = await axios.get('/goals');
         this.goals = response.data;
@@ -567,10 +571,14 @@ export default {
   },
 
   async mounted() {
-    await this.fetchGoals();
-    this.toast = useToast();
-    await this.fetchUserDetails();
-    await this.fetchGroups();
+    try {
+      await this.fetchUserDetails();
+      await this.fetchGoals();
+      await this.fetchGroups();
+    } catch (error) {
+      this.toast.error('Error initializing goals view.');
+      console.error('Error during component mount:', error);
+    }
   },
 };
 </script>
