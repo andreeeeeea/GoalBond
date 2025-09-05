@@ -1,150 +1,149 @@
 <template>
-  <div class="bg-white shadow-xl rounded-xl w-full sm:w-4/5 md:w-3/4 lg:w-1/2 min-h-96 max-h-auto mx-auto p-5 sm:p-10 md:p-16 my-10 sm:my-16">
-
-    <div class="container mx-auto">
-      <!-- Tab Navigation -->
-      <div class="flex justify-start mb-8 space-x-5 overflow-x-auto sm:overflow-visible">
-        <div
-          @click="setView('account')"
-          :class="getTabClass('account')"
-          class="tab text-sm sm:text-base"
-        >
-          Account
-        </div>
-        <div
-          @click="setView('myGroups')"
-          :class="getTabClass('myGroups')"
-          class="tab text-sm sm:text-base"
-        >
-          My Groups
-        </div>
-        <div
-          @click="setView('joinGroups')"
-          :class="getTabClass('joinGroups')"
-          class="tab text-sm sm:text-base"
-        >
-          Join a Group
-        </div>
-        <div
-          @click="setView('createGroup')"
-          :class="getTabClass('createGroup')"
-          class="tab text-sm sm:text-base"
-        >
-          Create a Group
-        </div>
+  <div class="overflow-x-auto bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-4">
+      <!-- Top Section with Title -->
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Account Settings</h1>
+        <p class="text-gray-600">Manage your account preferences and groups</p>
       </div>
 
-      <!-- Account Section -->
-      <div v-if="currentView === 'account'" class="flex flex-col space-y-4">
-        <h2 class="text-2xl font-bold">Account Information</h2>
-        <div v-if="editing">
-          <div>
-            <label for="nickname" class="block text-lg">Nickname</label>
-            <input
-              v-model="form.nickname"
-              id="nickname"
-              type="text"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="username" class="block text-lg">Username</label>
-            <input
-              v-model="form.username"
-              id="username"
-              type="text"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="email" class="block text-lg">Email</label>
-            <input
-              v-model="form.email"
-              id="email"
-              type="email"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="oldPassword" class="block text-lg">Old Password</label>
-            <input
-              v-model="form.oldPassword"
-              id="oldPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="newPassword" class="block text-lg">New Password</label>
-            <input
-              v-model="form.newPassword"
-              id="newPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="confirmPassword" class="block text-lg">Confirm New Password</label>
-            <input
-              v-model="form.confirmPassword"
-              id="confirmPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div class="flex flex-row items-left gap-4 mt-5">
-            <button 
-              @click="deleteAccount"
-              class="text-red-700 w-full sm:w-40 bg-white border-solid border-2 border-red-700 hover:bg-red-700 hover:text-white px-4 py-2 rounded-lg mt-2"
-            >
-              Delete Account
-            </button>
-            <p class="text-red-700 text-center mt-5">Warning: This action cannot be undone.</p>
-          </div>
-
-          <div class="flex flex-wrap gap-4 mt-5">
-            <button
-              @click="updateAccount"
-              class="text-white w-full sm:w-40 bg-green-600 hover:bg-green-700 px-4 py-2 rounded mt-2"
-            >
-              Save Changes
-            </button>
-            <button
-              @click="cancelEdit"
-              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
-            >
-              Cancel
-            </button>
-          </div>
+      <!-- Main Content Card -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <!-- Tab Navigation -->
+        <div class="flex space-x-4 mb-6 border-b">
+          <button 
+            v-for="tab in ['account', 'myGroups', 'joinGroups', 'createGroup']" 
+            :key="tab"
+            @click="setView(tab)"
+            :class="[
+              'px-4 py-2 font-medium transition-colors duration-200',
+              currentView === tab 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-gray-600 hover:text-blue-600'
+            ]"
+          >
+            {{ formatTabName(tab) }}
+          </button>
         </div>
 
-        <div v-else>
-          <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
-          <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
-          <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
+        <!-- Content Sections -->
+        <div class="mt-6">
+          <!-- Account Section -->
+          <div v-if="currentView === 'account'" class="space-y-6">
+            <div v-if="!editing" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <p class="text-sm text-gray-600">Nickname</p>
+                  <p class="text-lg font-medium">{{ nickname }}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <p class="text-sm text-gray-600">Username</p>
+                  <p class="text-lg font-medium">{{ username }}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <p class="text-sm text-gray-600">Email</p>
+                  <p class="text-lg font-medium">{{ email }}</p>
+                </div>
+              </div>
+              
+              <div class="flex space-x-4">
+                <button
+                  @click="startEdit"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Edit Profile
+                </button>
+                <button
+                  @click="logout"
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
 
-          <div class="flex flex-wrap gap-4 mt-5">
-            <button
-              @click="logout"
-              class="text-white w-full sm:w-40 bg-red-600 hover:bg-red-700 px-4 py-2 rounded mt-2"
-            >
-              Logout
-            </button>
-            <button
-              @click="startEdit"
-              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
-            >
-              Edit Account
-            </button>
+            <!-- Edit Form -->
+            <div v-else class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">Nickname</label>
+                  <input
+                    v-model="form.nickname"
+                    type="text"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">Username</label>
+                  <input
+                    v-model="form.username"
+                    type="text"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    v-model="form.email"
+                    type="email"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">Current Password</label>
+                  <input
+                    v-model="form.oldPassword"
+                    type="password"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">New Password</label>
+                  <input
+                    v-model="form.newPassword"
+                    type="password"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700">Confirm New Password</label>
+                  <input
+                    v-model="form.confirmPassword"
+                    type="password"
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div class="flex space-x-4">
+                <button
+                  @click="updateAccount"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+                <button
+                  @click="cancelEdit"
+                  class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div class="mt-8 pt-4 border-t">
+                <button
+                  @click="deleteAccount"
+                  class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                >
+                  Delete Account
+                </button>
+                <p class="mt-2 text-sm text-red-600">Warning: This action cannot be undone.</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       <!-- My Groups Section -->
       <div v-if="currentView === 'myGroups'">
