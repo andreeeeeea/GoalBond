@@ -1,7 +1,18 @@
 <template>
-  <div class="bg-white shadow-xl rounded-xl w-full sm:w-4/5 md:w-3/4 lg:w-1/2 min-h-96 max-h-auto mx-auto p-5 sm:p-10 md:p-16 my-10 sm:my-16">
-
-    <div class="container mx-auto">
+  <div class="bg-white w-full my-10 sm:my-16 flex flex-row rounded-lg">
+    <div class="basis-1/3 ">
+      <div class="flex flex-col items-center">
+        <img
+          src="https://www.gravatar.com/avatar?d=mp&s=200"
+          alt="Profile Picture"
+          class="w-32 h-32 rounded-full mb-4" 
+        />
+        <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
+        <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
+        <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
+      </div>
+    </div>
+    <div class="basis-2/3">
       <!-- Tab Navigation -->
       <div class="flex justify-start mb-8 space-x-5 overflow-x-auto sm:overflow-visible">
         <div
