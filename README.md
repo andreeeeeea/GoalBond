@@ -6,21 +6,6 @@
 
 You can access it here: https://goalbond.netlify.app/
 
-
-###
-
-This platform is still in its developmental stage. I am actively working on it, but it is mostly finished, backend wise.
-
-If it takes a bit for it to register your request, that's because I'm using the free tiers of Render and Netlify to host the website. 
-
-The backend may go down at times, IF the supabase database goes inactive - if that is the case, I'll start up the database again.
-
-### TO DO:
-1. ~~Add functionality to the add group button (the one from the Account page works).~~ ADDED! 
-2. Revamp account page. - In progres...
-3. Add functionality for users to invite other users to their private groups - currently, that is not implemented.
-4. Add responsize design (i.e. make the website look nice on mobiles, currently it looks... eh)
-
 ### 
 
 ![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/hehe.png?raw=true)
