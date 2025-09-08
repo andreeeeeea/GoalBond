@@ -27,9 +27,9 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587                
 app.config['MAIL_USE_TLS'] = True            
 app.config['MAIL_USE_SSL'] = False            
-app.config['MAIL_USERNAME'] = 'goalbondbot@gmail.com' 
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com') 
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  
-app.config['MAIL_DEFAULT_SENDER'] = 'goalbondbot@gmail.com'  
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com')  
 
 
 # Cookies
@@ -47,7 +47,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Update CORS configuration to allow specific methods without preflight
 CORS(app, resources={r"/*": {
-    "origins": ["https://goalbond.netlify.app", "http://192.168.0.144:8080/", "http://localhost:8080"], # Remove the last two when done - FOR DEBUGGING.
+    "origins": ["https://goalbond.netlify.app"],
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Content-Type", "Authorization"],
     "supports_credentials": True,
@@ -144,8 +144,6 @@ def login():
     return jsonify({"message": "Invalid username or password"}), 401
 
 # User Deletion
-from flask_login import login_required, current_user
-
 @app.route('/delete_account', methods=['DELETE'])
 @login_required
 def delete_account():
@@ -161,13 +159,12 @@ def delete_account():
 
         db.session.delete(user)
         db.session.commit()
-        print(f"User with ID {current_user.id} and their associated goals have been deleted.")
 
         logout_user()
 
         return jsonify({'success': True, 'message': 'Your account has been deleted.'}), 200
     except Exception as e:
-        print(f"Error deleting account: {str(e)}")
+        app.logger.error(f"Error deleting account: {str(e)}")
         return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
 
 
@@ -234,10 +231,6 @@ def check_password():
     if not password:
         return jsonify({'message': 'Password is required'}), 400
 
-    print(f"Received password: {password}")
-    print(f"Stored password hash: {current_user.password}")
-    print(f"{current_user.check_password(password)}")
-
     if not current_user.check_password(password):
         return jsonify({'message': 'Password is incorrect'}), 401
 
@@ -259,11 +252,6 @@ def create_goal():
 
     if not title or user_id is None:
         return jsonify({'message': 'Missing title or user_id'}), 400
-
-    # Check if the user exists
-    user = current_user.id
-    if user is None:
-        return jsonify({'message': 'User not found'}), 404
 
     # Extract season and episode if category is 'Series'
     season = data.get('season') if category == 'Series' else None
@@ -555,13 +543,10 @@ def search_groups():
 def forgot_password():
     try:
         data = request.get_json()  # Get the request data from Vue.js
-        print(f"Received data: {data}")  # Debug: log incoming data
 
         email = data.get('email')
         if not email:
             return jsonify({'success': False, 'message': 'Email is required'}), 400
-
-        print(f"Processing email: {email}")  # Debug: log the email being processed
 
         user = User.query.filter_by(email=email).first()
 
@@ -569,23 +554,19 @@ def forgot_password():
             # Generate password reset token
             token = serializer.dumps(email, salt='reset-password')
             reset_link = url_for('reset_password', token=token, _external=True)
-            print(f"Generated reset link: {reset_link}")  # Debug: log the generated reset link
 
             # Send reset email
             msg = Message('Password Reset Request', recipients=[email])
             msg.body = f'Click the link to reset your password: {reset_link}'
             mail.send(msg)
 
-            print(f"Password reset email sent to {email}")  # Debug: confirm email sent
             return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
 
         else:
-            print(f"No user found with email: {email}")  # Debug: log if no user is found
             return jsonify({'success': False, 'message': 'No account found with that email address.'})
 
     except Exception as e:
         app.logger.error(f"Error in forgot_password route: {str(e)}")
-        print(f"Error in forgot_password: {str(e)}")  # Debug: log error message
         return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
        
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
@@ -595,15 +576,11 @@ def reset_password(token):
             try:
                 email = serializer.loads(token, salt='reset-password', max_age=3600)
             except (SignatureExpired, BadSignature) as e:
-                print(f"Error in token: {str(e)}") 
                 return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
-            
-            print(f"Decoded email from token: {email}") 
 
             user = User.query.filter_by(email=email).first()
 
             if not user:
-                print(f"No user found for the email {email} in reset_password route.") 
                 return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
 
             return redirect("/reset_password?token=" + token)
@@ -612,30 +589,24 @@ def reset_password(token):
             try:
                 email = serializer.loads(token, salt='reset-password', max_age=3600)
             except (SignatureExpired, BadSignature) as e:
-                print(f"Error in token: {str(e)}") 
                 return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
-            
-            print(f"Decoded email from token: {email}")  
 
             user = User.query.filter_by(email=email).first()
 
             if not user:
-                print(f"No user found for the email {email} in reset_password route.")  
                 return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
 
             new_password = request.json.get('password')
             if not new_password:
-                print("New password not provided.")
                 return jsonify({'success': False, 'message': 'New password is required.'}), 400
 
             user.set_password(new_password)
             db.session.commit()
-            print(f"Password for {email} has been updated.")  
 
             return jsonify({'success': True, 'message': 'Your password has been updated!'}), 200
 
     except Exception as e:
-        print(f"Error in reset_password: {str(e)}")  
+        app.logger.error(f"Error in reset_password: {str(e)}")
         return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
 
     

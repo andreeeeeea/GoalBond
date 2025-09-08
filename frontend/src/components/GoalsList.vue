@@ -62,7 +62,14 @@
 
         <!-- Display Goals Based on the Selected Type -->
         <div v-if="showPersonalGoals" class="py-4">
-          <div v-if="personalGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-if="loadingGoals" class="flex justify-center items-center py-16">
+            <div class="animate-bounce">
+              <svg class="w-16 h-16 text-[#B03052]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
+          <div v-else-if="personalGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div v-for="goal in personalGoalsByCategory" :key="goal.id" 
                  class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[320px] border border-[#D76C82]/10">
               <div class="flex-grow flex flex-col">
@@ -125,25 +132,33 @@
 
         <!-- Display Group Goals -->
         <div v-if="showGroupGoals" class="py-4">
-          <div v-if="groupGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
-            <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-              <div class="flex-grow flex flex-col items-center">
-                <div class="block text-xl text-gray-700 my-4"><strong>{{ goal.title }}</strong></div>
-                <div class="block text-lg text-gray-700">{{  goal.description }}</div>
-                <div class="block text-lg text-gray-700" v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</div>
-                <div class="block text-lg text-gray-700">Group: {{ goal.group.name }}</div>
-                <span v-if="goal.deadline">
-                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000">
-                    <div div class="block text-lg text-gray-700">{{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left </div>
+          <div v-if="loadingGoals" class="flex justify-center items-center py-16">
+            <div class="animate-bounce">
+              <svg class="w-16 h-16 text-[#B03052]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
+          <div v-else-if="groupGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
+            <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md border border-[#D76C82]/10 p-6 flex flex-col h-80 hover:shadow-lg transition-shadow duration-300">
+              <div class="flex-grow flex flex-col">
+                <h3 class="text-xl font-bold text-gray-800 mb-3">{{ goal.title }}</h3>
+                <p class="text-gray-600 mb-2">{{ goal.description }}</p>
+                <div v-if="goal.season && goal.episode" class="text-sm text-gray-500 mb-2">
+                  Season: {{ goal.season }} Episode: {{ goal.episode }}
+                </div>
+                <div class="text-sm text-gray-500 mb-2">Group: {{ goal.group.name }}</div>
+                <div v-if="goal.deadline" class="text-sm">
+                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000" class="text-gray-500">
+                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left
                   </span>
-                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0">
-                    <div class="block text-lg text-red-500"> {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left </div>
+                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0" class="text-red-500">
+                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left
                   </span>
-                  <span v-else class="flex flex-col items-center justify-center">
-                    Deadline passed
-                    <div class="block text-lg text-gray-700">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
+                  <span v-else class="text-gray-500">
+                    Deadline passed: {{ new Date(goal.deadline).toLocaleDateString() }}
                   </span>
-                </span>
+                </div>
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -164,48 +179,34 @@
                   </button>
                 </div>
               </div>
-              <div class="relative inline-block text-left">
+              <div class="relative mt-4 self-end">
                 <button
                   @click="toggleDropdown(goal.id)"
-                  class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
                 >
                   Options
-                  <svg
-                    class="-mr-1 ml-2 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 <div
                   v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
                 >
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
-                    <div class="flex items-center justify-left ml-2 mb-2">
-                      <button
-                        class="text-gray-600 hover:bg-gray-100 font-bold rounded text-sm block w-full"
-                        @click="toggleGoalCompletion(goal)"
-                      >
-                        Mark as Completed
-                      </button>
-                    </div>
-                    <div class="flex items-center justify-left ml-2">
-                      <button
-                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
-                        @click="deleteGoal(goal.id)"
-                      >
-                        Delete Goal
-                      </button>
-                    </div>
+                    <button
+                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
+                      @click="toggleGoalCompletion(goal)"
+                    >
+                      Mark as Completed
+                    </button>
+                    <button
+                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
+                      @click="deleteGoal(goal.id)"
+                    >
+                      Delete Goal
+                    </button>
                   </div>
                 </div>
               </div>
@@ -218,57 +219,54 @@
 
         <!-- Display Completed Goals -->
         <div v-if="showCompletedGoals" class="py-4">
-          <div v-if="completedGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
-            <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow p-4 flex flex-col h-80">
-              <div class="flex-grow flex flex-col items-center">
-                <div class="block text-xl text-gray-700 my-4"><strong>{{ goal.title }}</strong></div>
-                <div class="block text-lg text-gray-700">{{  goal.description }}</div>
-                <div class="block text-lg text-gray-700" v-if="goal.season && goal.episode">Season: {{ goal.season }} Episode: {{ goal.episode }}</div>
-                <div class="block text-lg text-gray-700" v-if="goal.deadline">{{ new Date(goal.deadline).toLocaleDateString() }}</div>
+          <div v-if="loadingGoals" class="flex justify-center items-center py-16">
+            <div class="animate-bounce">
+              <svg class="w-16 h-16 text-[#B03052]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
+          <div v-else-if="completedGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
+            <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md border border-[#D76C82]/10 p-6 flex flex-col h-80 hover:shadow-lg transition-shadow duration-300">
+              <div class="flex-grow flex flex-col">
+                <h3 class="text-xl font-bold text-gray-800 mb-3">{{ goal.title }}</h3>
+                <p class="text-gray-600 mb-2">{{ goal.description }}</p>
+                <div v-if="goal.season && goal.episode" class="text-sm text-gray-500 mb-2">
+                  Season: {{ goal.season }} Episode: {{ goal.episode }}
+                </div>
+                <div v-if="goal.deadline" class="text-sm text-gray-500">
+                  {{ new Date(goal.deadline).toLocaleDateString() }}
+                </div>
               </div>
 
-              <div class="relative inline-block text-left">
+              <div class="relative mt-4 self-end">
                 <button
                   @click="toggleDropdown(goal.id)"
-                  class="inline-flex justify-center w-28 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
                 >
                   Options
-                  <svg
-                    class="-mr-1 ml-2 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 <div
                   v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute left-0 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
                 >
                   <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
-                    <div class="flex items-center justify-left ml-2 mb-2">
-                      <button 
-                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
-                        @click="redoGoal(goal)"
-                        >
-                        Re-Do Goal
-                      </button>
-                    </div>
-                    <div class="flex items-center justify-left ml-2">
-                      <button
-                        class="text-gray-600 hover:text-black font-bold rounded text-sm block w-full"
-                        @click="deleteGoal(goal.id)"
-                      >
-                        Delete Goal
-                      </button>
-                    </div>
+                    <button 
+                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
+                      @click="redoGoal(goal)"
+                    >
+                      Re-Do Goal
+                    </button>
+                    <button
+                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
+                      @click="deleteGoal(goal.id)"
+                    >
+                      Delete Goal
+                    </button>
                   </div>
                 </div>
               </div>
@@ -412,6 +410,7 @@ export default {
       userGroups: [],
       groups: [],
       goals: [],
+      loadingGoals: false,
       selectedCategory: 'Books',
       goalCategories: [
         'Books',
@@ -538,12 +537,15 @@ export default {
     },
 
     async fetchGoals() {
+      this.loadingGoals = true;
       try {
         const response = await axios.get('/goals');
         this.goals = response.data;
       } catch (error) {
         console.error('Error fetching goals:', error);
         this.toast.error('Error fetching goals.');
+      } finally {
+        this.loadingGoals = false;
       }
     },
 

@@ -43,16 +43,17 @@ class Goal(db.Model):
     season = db.Column(db.Integer, nullable=True)
     episode = db.Column(db.Integer, nullable=True)
 
+    # Relationship to group for eager loading
+    group = db.relationship('Group', backref='group_goals', lazy='joined')
+    
     def to_dict(self):
         group_data = None
-        if self.group_id:
-            group = Group.query.get(self.group_id)
-            if group:
-                group_data = {
-                    'id': group.id,
-                    'name': group.name,
-                    'members': [{'id': member.id, 'username': member.username} for member in group.members]
-                }
+        if self.group:
+            group_data = {
+                'id': self.group.id,
+                'name': self.group.name,
+                'members': [{'id': member.id, 'username': member.username} for member in self.group.members]
+            }
         
         return {
             'id': self.id,
@@ -81,6 +82,3 @@ class Group(db.Model):
 
         # Update the relationship to use back_populates
         members = db.relationship('User', secondary=user_groups, back_populates='groups')
-
-        # Relationship to goals
-        goals = db.relationship('Goal', backref='group', lazy=True)

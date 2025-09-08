@@ -1,265 +1,394 @@
 <template>
-  <div class="bg-white w-full my-10 sm:my-16 flex flex-row rounded-lg">
-    <div class="basis-1/3 ">
-      <div class="flex flex-col items-center">
-        <img
-          src="https://www.gravatar.com/avatar?d=mp&s=200"
-          alt="Profile Picture"
-          class="w-32 h-32 rounded-full mb-4" 
-        />
-        <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
-        <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
-        <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
-      </div>
-    </div>
-    <div class="basis-2/3">
-      <!-- Tab Navigation -->
-      <div class="flex justify-start mb-8 space-x-5 overflow-x-auto sm:overflow-visible">
-        <div
+  <div v-if="isAuthenticated" class="mx-4">
+    <section class="flex">
+      <!-- Sidebar for Account Sections -->
+      <div class="w-1/6 bg-[#FEFEFD] py-4 h-screen overflow-y-auto border-r border-gray-300/20">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 px-4">Account</h2>
+        <div 
           @click="setView('account')"
-          :class="getTabClass('account')"
-          class="tab text-sm sm:text-base"
+          :class="[
+            'cursor-pointer py-3 px-4 transition-all duration-300 flex items-center',
+            currentView === 'account' 
+              ? 'bg-[#B03052] text-white font-bold' 
+              : 'text-gray-600 hover:bg-[#D76C82]/10 hover:text-[#B03052] font-semibold'
+          ]"
         >
-          Account
+          Profile
         </div>
-        <div
+        <div 
           @click="setView('myGroups')"
-          :class="getTabClass('myGroups')"
-          class="tab text-sm sm:text-base"
+          :class="[
+            'cursor-pointer py-3 px-4 transition-all duration-300 flex items-center',
+            currentView === 'myGroups' 
+              ? 'bg-[#B03052] text-white font-bold' 
+              : 'text-gray-600 hover:bg-[#D76C82]/10 hover:text-[#B03052] font-semibold'
+          ]"
         >
           My Groups
         </div>
-        <div
+        <div 
           @click="setView('joinGroups')"
-          :class="getTabClass('joinGroups')"
-          class="tab text-sm sm:text-base"
+          :class="[
+            'cursor-pointer py-3 px-4 transition-all duration-300 flex items-center',
+            currentView === 'joinGroups' 
+              ? 'bg-[#B03052] text-white font-bold' 
+              : 'text-gray-600 hover:bg-[#D76C82]/10 hover:text-[#B03052] font-semibold'
+          ]"
         >
-          Join a Group
-        </div>
-        <div
-          @click="setView('createGroup')"
-          :class="getTabClass('createGroup')"
-          class="tab text-sm sm:text-base"
-        >
-          Create a Group
+          Join Groups
         </div>
       </div>
-
-      <!-- Account Section -->
-      <div v-if="currentView === 'account'" class="flex flex-col space-y-4">
-        <h2 class="text-2xl font-bold">Account Information</h2>
-        <div v-if="editing">
-          <div>
-            <label for="nickname" class="block text-lg">Nickname</label>
-            <input
-              v-model="form.nickname"
-              id="nickname"
-              type="text"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="username" class="block text-lg">Username</label>
-            <input
-              v-model="form.username"
-              id="username"
-              type="text"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="email" class="block text-lg">Email</label>
-            <input
-              v-model="form.email"
-              id="email"
-              type="email"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="oldPassword" class="block text-lg">Old Password</label>
-            <input
-              v-model="form.oldPassword"
-              id="oldPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="newPassword" class="block text-lg">New Password</label>
-            <input
-              v-model="form.newPassword"
-              id="newPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label for="confirmPassword" class="block text-lg">Confirm New Password</label>
-            <input
-              v-model="form.confirmPassword"
-              id="confirmPassword"
-              type="password"
-              class="border border-gray-300 rounded-lg p-2 w-full"
-            />
-          </div>
-
-          <div class="flex flex-row items-left gap-4 mt-5">
-            <button 
-              @click="deleteAccount"
-              class="text-red-700 w-full sm:w-40 bg-white border-solid border-2 border-red-700 hover:bg-red-700 hover:text-white px-4 py-2 rounded-lg mt-2"
-            >
-              Delete Account
-            </button>
-            <p class="text-red-700 text-center mt-5">Warning: This action cannot be undone.</p>
-          </div>
-
-          <div class="flex flex-wrap gap-4 mt-5">
-            <button
-              @click="updateAccount"
-              class="text-white w-full sm:w-40 bg-green-600 hover:bg-green-700 px-4 py-2 rounded mt-2"
-            >
-              Save Changes
-            </button>
-            <button
-              @click="cancelEdit"
-              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        <div v-else>
-          <div class="block text-xl text-gray-700"><strong>Nickname:</strong> {{ nickname }}</div>
-          <div class="block text-xl text-gray-700"><strong>Username:</strong> {{ username }}</div>
-          <div class="block text-xl text-gray-700"><strong>Email:</strong> {{ email }}</div>
-
-          <div class="flex flex-wrap gap-4 mt-5">
-            <button
-              @click="logout"
-              class="text-white w-full sm:w-40 bg-red-600 hover:bg-red-700 px-4 py-2 rounded mt-2"
-            >
-              Logout
-            </button>
-            <button
-              @click="startEdit"
-              class="text-white w-full sm:w-40 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-2"
-            >
-              Edit Account
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- My Groups Section -->
-      <div v-if="currentView === 'myGroups'">
-        <h2 class="text-2xl font-semibold mb-4">My Groups</h2>
-        <ul v-if="groups.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <li v-for="group in groups" :key="group.id" class="bg-white rounded-lg border-solid border-2  p-4">
-            <div class="flex flex-col justify-between h-full">
+      <div class="min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
+      
+      <!-- Main section for content -->
+      <div class="flex-1 bg-[#FEFEFD] py-8 px-12 flex justify-center">
+        <div class="w-full max-w-5xl">
+        <!-- Account Section -->
+        <div v-if="currentView === 'account'">
+          <h2 class="text-3xl font-bold mb-10 text-gray-800">Profile Information</h2>
+          
+          <!-- Profile Info Card -->
+          <div class="bg-white rounded-lg shadow-md mb-4 border border-[#D76C82]/10">
+            <div class="px-8 py-10">
+              <h3 class="text-xl font-semibold text-gray-800 mb-8">Account Details</h3>
+              
+              <div class="space-y-4 px-4">
               <div>
-                <div class="block text-md text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong></div>
-                <div class="block text-md text-gray-700"><strong>Owner</strong>: {{ group.owner.username }}</div>
-                <div class="block text-md text-gray-700">{{ group.members.length }} members.</div>
-                <div v-if="group.description" class="block text-md text-gray-700">"{{ group.description }}"</div>
+                <label for="nickname" class="block text-sm font-medium text-gray-700 mb-2">Nickname</label>
+                <input
+                  v-model="form.nickname"
+                  id="nickname"
+                  type="text"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Enter your nickname"
+                />
               </div>
-              <button
-                @click="leaveGroup(group.id)"
-                class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
-              >
-                Leave Group
-              </button>
-              <div v-if="group.owner.id === currentUser.id">
+
+              <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input
+                  v-model="form.username"
+                  id="username"
+                  type="text"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Enter your username"
+                />
+              </div>
+
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input
+                  v-model="form.email"
+                  id="email"
+                  type="email"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div class="flex items-center gap-4 pt-6">
                 <button
-                  @click="deleteGroup(group.id)"
-                  class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
+                  @click="updateAccount"
+                  class="bg-[#B03052] text-white px-8 py-3 rounded-lg hover:bg-[#8B2440] transition-colors duration-300 font-medium"
                 >
-                  Delete Group
+                  Save Changes
+                </button>
+                <button
+                  @click="resetForm"
+                  class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-300 font-medium"
+                >
+                  Reset
+                </button>
+              </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Change Card -->
+          <div class="bg-white rounded-lg shadow-md mb-4 border border-[#D76C82]/10">
+            <div class="px-8 py-10">
+              <h3 class="text-xl font-semibold text-gray-800 mb-8">Password & Security</h3>
+              
+              <div v-if="showPasswordSection" class="space-y-4 px-4">
+              <div>
+                <label for="oldPassword" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                <input
+                  v-model="form.oldPassword"
+                  id="oldPassword"
+                  type="password"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Enter your current password"
+                />
+              </div>
+
+              <div>
+                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <input
+                  v-model="form.newPassword"
+                  id="newPassword"
+                  type="password"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Enter your new password"
+                />
+              </div>
+
+              <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                <input
+                  v-model="form.confirmPassword"
+                  id="confirmPassword"
+                  type="password"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent text-base"
+                  placeholder="Confirm your new password"
+                />
+              </div>
+
+              <div class="flex gap-4 pt-6">
+                <button
+                  @click="updatePassword"
+                  class="bg-[#B03052] text-white px-8 py-3 rounded-lg hover:bg-[#8B2440] transition-colors duration-300 font-medium"
+                >
+                  Update Password
+                </button>
+                <button
+                  @click="showPasswordSection = false; form.oldPassword = ''; form.newPassword = ''; form.confirmPassword = ''"
+                  class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-300 font-medium"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
-          </li>
-        </ul>
-        <p v-else>No groups available yet.</p>
-      </div>
-
-      <!-- Join Groups Section -->
-      <div v-if="currentView === 'joinGroups'">
-        <h2 class="text-2xl font-semibold mb-4">Join a Group</h2>
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search for a group"
-          class="border border-gray-300 rounded-lg p-2 w-full max-w-md mb-4"
-        />
-        <button @click="searchGroups" class="bg-indigo-600 text-white py-2 px-4 rounded">
-          Search
-        </button>
-        <ul v-if="availableGroups.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          <li v-for="group in availableGroups" :key="group.id" class="bg-white rounded-lg shadow p-4">
-            <div class="flex flex-col justify-between h-full">
-              <div>
-                <div class="block text-md text-gray-700"><strong>{{ group.name }} <span v-if="!group.is_public" class="text-red-500">(Private)</span></strong></div>
-                <div class="block text-md text-gray-700"><strong>Owner</strong>: {{ group.owner.username }}</div>
-                <div class="block text-md text-gray-700">{{ group.members.length }} members.</div>
-                <div v-if="group.description" class="block text-md text-gray-700">"{{ group.description }}"</div>
+              
+              <div v-else>
+                <div class="text-gray-600 mb-6 px-4">
+                  <p>Keep your account secure by using a strong password.</p>
+                </div>
+                <div class="flex justify-start px-4">
+                  <button
+                    @click="showPasswordSection = true"
+                    class="bg-[#B03052] text-white px-6 py-3 rounded-lg hover:bg-[#8B2440] transition-colors duration-300 font-medium flex items-center gap-2"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                    </svg>
+                    Change Password
+                  </button>
+                </div>
               </div>
-              <button
-                v-if="group.members.find(member => member.id === currentUser.id)"
-                @click="leaveGroup(group.id)"
-                class="mt-4 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-500"
+            </div>
+          </div>
+
+          <!-- Account Actions Card -->
+          <div class="bg-white rounded-lg shadow-md border border-[#D76C82]/10">
+            <div class="px-8 py-10">
+              <h3 class="text-xl font-semibold text-gray-800 mb-8">Account Actions</h3>
+              
+              <div class="space-y-6 px-4">
+                <!-- Logout Section -->
+                <div class="pb-6 border-b border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-medium text-gray-900 mb-1">Sign Out</h4>
+                      <p class="text-sm text-gray-600">End your current session and return to login</p>
+                    </div>
+                    <button
+                      @click="logout"
+                      class="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-300 font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                      </svg>
+                      Logout
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Delete Account Section -->
+                <div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-medium text-red-600 mb-1">Danger Zone</h4>
+                      <p class="text-sm text-gray-600">Permanently delete your account and all associated data</p>
+                    </div>
+                    <button 
+                      @click="deleteAccount"
+                      class="text-red-600 border-2 border-red-600 px-8 py-3 rounded-lg hover:bg-red-600 hover:text-white transition-colors duration-300 font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Groups Section -->
+        <div v-if="currentView === 'myGroups'">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800">My Groups</h2>
+          
+          <div v-if="loadingGroups" class="flex justify-center items-center py-16">
+            <div class="animate-bounce">
+              <svg class="w-16 h-16 text-[#B03052]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
+          <div v-else-if="groups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-for="group in groups" :key="group.id" 
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">
+                  {{ group.name }} 
+                  <span v-if="!group.is_public" class="text-sm text-red-500">(Private)</span>
+                </h3>
+                <p v-if="group.description" class="text-gray-600 mb-3 line-clamp-2">{{ group.description }}</p>
+                <div class="mt-auto space-y-1">
+                  <p class="text-sm text-gray-600">
+                    <span class="font-medium">Owner:</span> {{ group.owner.username }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    <span class="font-medium">Members:</span> {{ group.members.length }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Options Button -->
+              <div class="relative mt-4 self-end">
+                <button
+                  @click="toggleGroupDropdown(group.id)"
+                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                >
+                  Options
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div
+                  v-show="openGroupId === group.id"
+                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                >
+                  <div class="py-1" role="menu">
+                    <button
+                      @click="leaveGroup(group.id)"
+                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
+                    >
+                      Leave Group
+                    </button>
+                    <button
+                      v-if="group.owner.id === currentUser.id"
+                      @click="deleteGroup(group.id)"
+                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
+                    >
+                      Delete Group
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="bg-white rounded-lg shadow-md p-8 text-center border border-[#D76C82]/10">
+            <p class="text-gray-600">You haven't joined any groups yet.</p>
+          </div>
+        </div>
+
+        <!-- Join Groups Section -->
+        <div v-if="currentView === 'joinGroups'">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800">Discover Groups</h2>
+          
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6 border border-[#D76C82]/10">
+            <div class="flex gap-3">
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search for groups..."
+                @keyup.enter="searchGroups"
+                class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#B03052] focus:border-transparent"
+              />
+              <button 
+                @click="searchGroups" 
+                class="bg-[#B03052] text-white px-6 py-3 rounded-lg hover:bg-[#8B2440] transition-colors duration-300"
               >
-                Leave
-              </button>
-              <button
-                v-else
-                @click="joinGroup(group.id)"
-                class="mt-4 bg-green-600 text-white py-1 px-4 rounded hover:bg-green-500"
-              >
-                Join
+                Search
               </button>
             </div>
-          </li>
-        </ul>
-        <p v-else>No groups available yet.</p>
-      </div>
+          </div>
 
-      <!-- Create Group Section -->
-      <div v-if="currentView === 'createGroup'" class="max-w-md">
-        <h2 class="text-2xl font-semibold mb-4">Create a Group</h2>
-        <form @submit.prevent="createGroup">
-          <input
-            v-model="name"
-            type="text"
-            placeholder="Group Name"
-            class="border border-gray-300 rounded-lg p-2 w-full mb-4"
-            required
-          />
-          <textarea
-            v-model="description"
-            placeholder="Group Description"
-            class="border border-gray-300 rounded-lg p-2 w-full mb-4"
-          ></textarea>
-          <label class="block mb-2">Group Privacy:</label>
-          <select v-model="isPublic" class="border border-gray-300 rounded-lg p-2 w-full mb-4">
-            <option :value="true">Public</option>
-            <option :value="false">Private</option>
-          </select>
-          <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg">
-            Create Group
-          </button>
-        </form>
+          <div v-if="loadingAvailableGroups" class="flex justify-center items-center py-16">
+            <div class="animate-bounce">
+              <svg class="w-16 h-16 text-[#B03052]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+          </div>
+          <div v-else-if="availableGroups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-for="group in availableGroups" :key="group.id" 
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">
+                  {{ group.name }}
+                  <span v-if="!group.is_public" class="text-sm text-red-500">(Private)</span>
+                </h3>
+                <p v-if="group.description" class="text-gray-600 mb-3 line-clamp-2">{{ group.description }}</p>
+                <div class="mt-auto space-y-1">
+                  <p class="text-sm text-gray-600">
+                    <span class="font-medium">Owner:</span> {{ group.owner.username }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    <span class="font-medium">Members:</span> {{ group.members.length }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Options Button -->
+              <div class="relative mt-4 self-end">
+                <button
+                  @click="toggleGroupDropdown(group.id)"
+                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                >
+                  Options
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div
+                  v-show="openGroupId === group.id"
+                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                >
+                  <div class="py-1" role="menu">
+                    <button
+                      v-if="group.isMember"
+                      @click="leaveGroup(group.id)"
+                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
+                    >
+                      Leave Group
+                    </button>
+                    <button
+                      v-else
+                      @click="joinGroup(group.id)"
+                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
+                    >
+                      Join Group
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="bg-white rounded-lg shadow-md p-8 text-center border border-[#D76C82]/10">
+            <p class="text-gray-600">No public groups found. Try searching or creating a new group.</p>
+          </div>
+        </div>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
-
 
 <script>
 import { mapGetters } from 'vuex';
@@ -285,12 +414,6 @@ export default {
     nickname() {
       return this.getNickname;
     },
-    isAuthenticated() {
-      return this.$store.getters.isAuthenticated;
-    },
-    currentUser() {
-      return this.$store.getters.currentUser;
-    },
   },
   data() {
     return {
@@ -303,6 +426,10 @@ export default {
       isPublic: true,
       publicGroups: [],
       searchQuery: '',
+      showPasswordSection: false,
+      loadingGroups: false,
+      loadingAvailableGroups: false,
+      openGroupId: null,
       form: {
         nickname: this.getNickname,
         username: this.getUsername,
@@ -318,6 +445,29 @@ export default {
     this.toast = useToast();
     this.fetchUserGroups();
     this.fetchPublicGroups();
+    this.fetchAvailableGroups(); // Load available groups on mount
+    // Initialize form with current values
+    this.form.nickname = this.getNickname;
+    this.form.username = this.getUsername;
+    this.form.email = this.getEmail;
+  },
+  watch: {
+    // Watch for changes in user data and update form
+    getNickname(newVal) {
+      if (!this.showPasswordSection) {
+        this.form.nickname = newVal;
+      }
+    },
+    getUsername(newVal) {
+      if (!this.showPasswordSection) {
+        this.form.username = newVal;
+      }
+    },
+    getEmail(newVal) {
+      if (!this.showPasswordSection) {
+        this.form.email = newVal;
+      }
+    }
   },
   methods: {
     async logout() {
@@ -328,38 +478,41 @@ export default {
     
     setView(view) {
       this.currentView = view;
-      if (view === 'joinGroups') this.fetchAvailableGroups();
+      if (view === 'joinGroups') {
+        this.fetchAvailableGroups();
+      }
     },
-    getTabClass(view) {
-    return this.currentView === view
-      ? 'tab active'
-      : 'tab text-gray-600'; 
+    toggleGroupDropdown(groupId) {
+      this.openGroupId = this.openGroupId === groupId ? null : groupId;
     },
     startEdit() {
       this.editing = true; 
     },
     cancelEdit() {
       this.editing = false; 
+      this.form = {
+        nickname: this.getNickname,
+        username: this.getUsername,
+        email: this.getEmail,
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      };
+    },
+    resetForm() {
+      this.form = {
+        nickname: this.getNickname,
+        username: this.getUsername,
+        email: this.getEmail,
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      };
+      this.showPasswordSection = false;
     },
     async updateAccount() {
       try {
         const updatedFields = {};
-
-        if (this.form.oldPassword) {
-          const passwordMatchResponse = await axios.post('/check-password', {
-            password: this.form.oldPassword  // This should be sent as 'password'
-          });
-
-          if (passwordMatchResponse.status !== 200) {
-            this.toast.error('Old password is incorrect.');
-            return;
-          }
-        }
-
-        if (this.form.newPassword !== this.form.confirmPassword) {
-          this.toast.error('New passwords do not match.');
-          return;
-        }
 
         if (this.form.nickname !== this.getNickname) {
           updatedFields.nickname = this.form.nickname;
@@ -370,18 +523,66 @@ export default {
         if (this.form.email !== this.getEmail) {
           updatedFields.email = this.form.email;
         }
-        if (this.form.newPassword) {
-          updatedFields.password = this.form.newPassword;
+
+        if (Object.keys(updatedFields).length === 0) {
+          this.toast.info('No changes to save.');
+          return;
         }
 
         const response = await axios.put('/update-user', updatedFields);
         
         console.log('Account updated:', response.data);
-        this.toast.success('Account updated successfully.');
-        this.editing = false; 
+        this.toast.success('Account details updated successfully.');
+        
+        // Update the store with new user info
+        await this.$store.dispatch('checkAuth');
       } catch (error) {
         console.error('Error updating account:', error); 
         this.toast.error('An error occurred while updating the account');
+      }
+    },
+    async updatePassword() {
+      try {
+        if (!this.form.oldPassword) {
+          this.toast.error('Please enter your current password.');
+          return;
+        }
+
+        if (!this.form.newPassword) {
+          this.toast.error('Please enter a new password.');
+          return;
+        }
+
+        if (this.form.newPassword !== this.form.confirmPassword) {
+          this.toast.error('New passwords do not match.');
+          return;
+        }
+
+        // Verify old password
+        const passwordMatchResponse = await axios.post('/check-password', {
+          password: this.form.oldPassword
+        });
+
+        if (passwordMatchResponse.status !== 200) {
+          this.toast.error('Current password is incorrect.');
+          return;
+        }
+
+        // Update password
+        await axios.put('/update-user', {
+          password: this.form.newPassword
+        });
+        
+        this.toast.success('Password updated successfully.');
+        
+        // Clear password fields
+        this.form.oldPassword = '';
+        this.form.newPassword = '';
+        this.form.confirmPassword = '';
+        this.showPasswordSection = false;
+      } catch (error) {
+        console.error('Error updating password:', error); 
+        this.toast.error('An error occurred while updating the password');
       }
     },
     async deleteAccount() {
@@ -389,8 +590,9 @@ export default {
         try {
           const response = await axios.delete('/delete_account');
           if (response.data.success) {
-            alert(response.data.message); 
-            window.location.href = "/";  
+            this.toast.success(response.data.message);
+            this.$store.dispatch('logout');
+            this.$router.push('/');
           } else {
             console.log('Error deleting account:', response.data.message);
             this.toast.error('Failed to delete account. Please try again.');
@@ -402,6 +604,7 @@ export default {
       }
     },
     async fetchUserGroups() {
+      this.loadingGroups = true;
       try {
         const response = await axios.get('/groups/mine');
         this.groups = response.data;
@@ -411,6 +614,8 @@ export default {
         } else {
           console.log('Error fetching user groups:', error);
         }
+      } finally {
+        this.loadingGroups = false;
       }
     },
     async fetchPublicGroups() {
@@ -428,15 +633,32 @@ export default {
       }
     },
     async fetchAvailableGroups() {
+      this.loadingAvailableGroups = true;
       try {
-        const response = await axios.get('/groups/not-mine');
-        this.availableGroups = response.data;
+        // Get all public groups first
+        const response = await axios.get('/groups');
+        console.log('All groups from API:', response.data);
+        console.log('Current user:', this.currentUser);
+        console.log('Username:', this.username);
+        
+        // Show all public groups, marking which ones the user is already in
+        const publicGroups = response.data.filter(group => group.is_public);
+        
+        // Add a flag to indicate if user is already a member
+        this.availableGroups = publicGroups.map(group => ({
+          ...group,
+          isMember: group.members.some(member => member.username === this.username)
+        }));
+        
+        console.log('Available groups with membership status:', this.availableGroups);
       } catch (error) {
         if (error.response?.status === 401) {
           this.availableGroups = [];
         } else {
           console.error('Error fetching available groups:', error);
         }
+      } finally {
+        this.loadingAvailableGroups = false;
       }
     },
     async createGroup() {
@@ -447,6 +669,7 @@ export default {
         this.description = '';
         this.isPublic = true;
         this.fetchUserGroups();
+        this.setView('myGroups');
       } catch (error) {
         this.toast.error('Error creating group. Please try again.');
       }
@@ -470,28 +693,48 @@ export default {
           this.groups = this.groups.filter(group => group.id !== groupId);
         } else {
           this.toast.success('You have left the group!');
-          this.groups.find(group => group.id === groupId).members = this.groups.find(group => group.id === groupId).members.filter(member => member.username !== this.username);
+          // Remove group from My Groups list
+          this.groups = this.groups.filter(group => group.id !== groupId);
         }
+        // Refresh both group lists
+        this.fetchUserGroups();
+        this.fetchAvailableGroups();
       } catch (error) {
         this.toast.error('Error leaving group. Please try again.');
       }
     },
     async searchGroups() {
       try {
-        const response = await axios.get(`/groups/search?query=${this.searchQuery}`);
-        this.availableGroups = response.data;
+        if (this.searchQuery.trim()) {
+          // If there's a search query, use the search endpoint
+          const response = await axios.get(`/groups/search?query=${this.searchQuery}`);
+          // Show all public groups from search results with membership status
+          const publicGroups = response.data.filter(group => group.is_public);
+          
+          // Add a flag to indicate if user is already a member
+          this.availableGroups = publicGroups.map(group => ({
+            ...group,
+            isMember: group.members.some(member => member.username === this.username)
+          }));
+        } else {
+          // If no search query, show all public groups
+          this.fetchAvailableGroups();
+        }
       } catch (error) {
+        console.error('Error searching groups:', error);
         this.toast.error('Error searching groups. Please try again.');
       }
     },
     async deleteGroup(groupId) {
-      try {
-        await axios.delete(`/groups/${groupId}`);
-        this.toast.success('Group deleted successfully!');
-        this.fetchUserGroups();
-        this.fetchAvailableGroups();
-      } catch (error) {
-        this.toast.error('Error deleting group. Please try again.');
+      if (confirm("Are you sure you want to delete this group?")) {
+        try {
+          await axios.delete(`/groups/${groupId}`);
+          this.toast.success('Group deleted successfully!');
+          this.fetchUserGroups();
+          this.fetchAvailableGroups();
+        } catch (error) {
+          this.toast.error('Error deleting group. Please try again.');
+        }
       }
     },
   },
@@ -499,14 +742,10 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  max-width: 800px;
-}
-.success {
-  color: green;
-}
-.error {
-  color: red;
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
-

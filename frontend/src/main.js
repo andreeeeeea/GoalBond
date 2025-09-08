@@ -10,6 +10,7 @@ import "vue-toastification/dist/index.css";
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.baseURL = process.env.VUE_APP_API_URL || 'http://127.0.0.1:5000/';
 
 const app = createApp(App);
 app.config.globalProperties.$axios = axios;
