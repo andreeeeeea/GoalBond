@@ -27,7 +27,7 @@ With GoalBond you can...
 - Database: PostgreSQL (Supabase)
 - Deployment: Netlify (frontend) + Render (backend)
 
-🔥 Built out of necessity, with love, shared for anyone who loves simple and effective goal tracking.
+🔥 Built out of love, shared for anyone who loves simple and effective goal tracking.
 
 ![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/hehe.png?raw=true)
 
