@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/f706469d-2048-4c3b-becd-78c2a378db03/deploy-status)](https://app.netlify.com/sites/goalbond/deploys)
 
-### Live Demo: https://goalbond.netlify.app/
+### Link: https://goalbond.netlify.app/
 
 ### 
 
