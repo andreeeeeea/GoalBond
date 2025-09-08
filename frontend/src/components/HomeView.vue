@@ -37,7 +37,7 @@
                 @click="goToSignUp"
                 class="px-8 py-4 bg-[#B03052] text-white font-bold rounded-xl hover:bg-[#8B2440] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                Start Your Journey Free
+                Start Your Journey For Free
               </button>
               <button
                 v-if="!isAuthenticated"
