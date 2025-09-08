@@ -15,17 +15,23 @@
       <div class="flex items-center space-x-6">
       <!-- Authentication buttons -->
         <div class="flex items-center space-x-4">
+          <button 
+          @click="goToHome"
+          class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300 hover:bg-gray-200"
+          >
+            Home
+          </button>
           <button
             v-if="!isAuthenticated"
             @click="goToLogin"
-            class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300"
+            class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300 hover:bg-gray-200"
           >
             Login
           </button>
           <button
             v-if="!isAuthenticated"
             @click="goToSignup"
-            class="text-xl font-semibold text-gray-600  px-4 py-2 rounded transition duration-300"
+            class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300 hover:bg-gray-200"
           >
             Sign Up
           </button>
@@ -33,14 +39,14 @@
           <button
             v-if="isAuthenticated"
             @click="goToGoals"
-            class="text-xl text-gray-600 px-4 py-2 rounded transition duration-300"
+            class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300 hover:bg-gray-200"
           >
             Goals
           </button>
           <button
             v-if="isAuthenticated"
             @click="goToAccount"
-            class="text-xl text-gray-600  px-4 py-2 rounded transition duration-300"
+            class="text-xl font-semibold text-gray-600 px-4 py-2 rounded transition duration-300 hover:bg-gray-200"
           >
             Account
           </button>
@@ -88,6 +94,7 @@ export default {
     const goToGoals = () => goToProtectedRoute('/goals');
     const goToGroups = () => goToProtectedRoute('/groups');
     const goToAccount = () => goToProtectedRoute('/account');
+    const goToHome = () => router.push('/');
 
     return {
       isAuthenticated,
@@ -97,6 +104,7 @@ export default {
       goToGoals,
       goToGroups,
       goToAccount,
+      goToHome,
     };
   },
 };

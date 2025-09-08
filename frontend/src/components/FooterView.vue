@@ -1,5 +1,5 @@
 <template>
-    <footer class="bg-gray-900 text-white py-6 mt-10">
+    <footer class=" text-gray-900 py-6 mt-10">
       <div class="container mx-auto text-center">
         <div class="flex justify-center space-x-4 mb-4">
           <a href="/privacy" class="hover:underline">Privacy Policy</a>

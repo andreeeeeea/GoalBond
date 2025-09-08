@@ -207,8 +207,8 @@ def update_user():
     if not email:
         return jsonify({'message': 'Email is required'}), 400
     
-    ##if password and len(password) < 8:  
-       ##return jsonify({'message': 'Password should be at least 8 characters long'}), 400
+    if password and len(password) < 8:  
+       return jsonify({'message': 'Password should be at least 8 characters long'}), 400
 
     current_user.username = username
     current_user.nickname = nickname

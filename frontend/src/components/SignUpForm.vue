@@ -26,13 +26,30 @@
             v-model="password" 
             type="password" 
             placeholder="Password" 
+            @input="validatePassword"
             class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
             required
           />
+          <div v-if="passwordErrors.length > 0" class="mt-2">
+            <p class="text-xs text-red-500" v-for="error in passwordErrors" :key="error">{{ error }}</p>
+          </div>
+          <div v-if="password && passwordErrors.length === 0" class="mt-2">
+            <p class="text-xs text-green-500">✓ Password meets all requirements</p>
+          </div>
+          <div v-if="!password" class="mt-2 text-xs text-gray-500">
+            <p class="font-semibold mb-1">Password must contain:</p>
+            <ul class="list-disc list-inside space-y-0.5">
+              <li>At least 8 characters</li>
+              <li>At least one uppercase letter</li>
+              <li>At least one number</li>
+              <li>At least one symbol (!@#$%^&*)</li>
+            </ul>
+          </div>
         </div>
         <button 
           type="submit"
-          class="w-full bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#8B2440] transition duration-300"
+          :disabled="passwordErrors.length > 0"
+          class="w-full bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#8B2440] transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Sign Up
         </button>
@@ -55,6 +72,7 @@ export default {
       username: '',
       email: '',
       password: '',
+      passwordErrors: [],
     };
   },
   computed: {
@@ -63,7 +81,34 @@ export default {
     }
   },
   methods: {
+    validatePassword() {
+      this.passwordErrors = [];
+      
+      if (this.password.length < 8) {
+        this.passwordErrors.push('• Password must be at least 8 characters long');
+      }
+      
+      if (!/[A-Z]/.test(this.password)) {
+        this.passwordErrors.push('• Password must contain at least one uppercase letter');
+      }
+      
+      if (!/[0-9]/.test(this.password)) {
+        this.passwordErrors.push('• Password must contain at least one number');
+      }
+      
+      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(this.password)) {
+        this.passwordErrors.push('• Password must contain at least one symbol');
+      }
+    },
     async addUser() {
+      // Validate password before submitting
+      this.validatePassword();
+      
+      if (this.passwordErrors.length > 0) {
+        this.toast.error('Please fix password errors before submitting');
+        return;
+      }
+      
       try {
         const response = await axios.post('/signup', {
           username: this.username,
@@ -76,6 +121,7 @@ export default {
         this.username = '';
         this.email = '';
         this.password = '';
+        this.passwordErrors = [];
         
         // Redirect to login page
         this.$router.push('/login');
