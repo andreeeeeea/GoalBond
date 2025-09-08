@@ -4,16 +4,16 @@
       <h1 class="text-2xl font-bold text-center">Login</h1>
       <form @submit.prevent="handleLogin" class="mt-10">
         <div class="mb-4">
-          <input v-model="username" placeholder="Username" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input v-model="username" placeholder="Username" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]" />
         </div>
         <div class="mb-4">
-          <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]" />
         </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300">Login</button>
+        <button type="submit" class="w-full bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#8B2440] transition duration-300">Login</button>
       </form>
       <div class="my-4">
-          <p class="text-center">Don't have an account? <router-link to="/signup" class="text-blue-500">Sign Up</router-link></p>
-          <p class="text-center">Forgot your password? <router-link to="/forgot_password" class="text-blue-500">Reset Password</router-link></p>
+          <p class="text-center">Don't have an account? <router-link to="/signup" class="text-[#B03052]">Sign Up</router-link></p>
+          <p class="text-center">Forgot your password? <router-link to="/forgot_password" class="text-[#B03052]">Reset Password</router-link></p>
       </div>
     </div>
   </div>

@@ -69,59 +69,95 @@
               </svg>
             </div>
           </div>
-          <div v-else-if="personalGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-else-if="personalGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             <div v-for="goal in personalGoalsByCategory" :key="goal.id" 
-                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[320px] border border-[#D76C82]/10">
-              <div class="flex-grow flex flex-col">
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">{{ goal.title }}</h3>
-                <p class="text-gray-600 mb-3">{{ goal.description }}</p>
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col min-h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col overflow-hidden">
+                <h3 class="text-xl font-bold text-gray-800 my-3 break-words">{{ goal.title }}</h3>
+                <p class="text-gray-600 mb-3 break-words">{{ goal.description }}</p>
                 <div v-if="goal.season && goal.episode" class="text-gray-600 mb-2">
                   Season: {{ goal.season }} Episode: {{ goal.episode }}
                 </div>
-                <div v-if="goal.deadline" class="mt-auto">
-                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000" class="text-gray-800">
-                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left
-                  </span>
-                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0" class="text-red-500 font-semibold">
-                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left
-                  </span>
-                  <span v-else class="text-gray-500">
-                    Deadline passed: {{ new Date(goal.deadline).toLocaleDateString() }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Options Button -->
-              <div class="relative mt-4 self-end">
-                <button
-                  @click="toggleDropdown(goal.id)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
-                >
-                  Options
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                <div
-                  v-show="openGoalId === goal.id"
-                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
-                >
-                  <div class="py-1" role="menu">
-                    <button
-                      @click="toggleGoalCompletion(goal)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Mark as Completed
-                    </button>
-                    <button
-                      @click="deleteGoal(goal.id)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Delete Goal
-                    </button>
+                
+                <!-- Progress Section -->
+                <div class="my-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-600 text-sm font-medium">Progress</span>
+                    <span class="text-[#B03052] text-sm font-bold">{{ goal.progress || 0 }}%</span>
+                  </div>
+                  <div class="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      class="absolute top-0 left-0 h-full bg-gradient-to-r from-[#B03052] to-[#D76C82] rounded-full transition-all duration-700 ease-out"
+                      :style="{ width: `${goal.progress || 0}%` }"
+                    />
                   </div>
                 </div>
+                <div class="flex flex-row mt-auto space-x-2">
+                  <div v-if="goal.deadline" class="mt-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 7V12L14.5 10.5M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+
+                  <div v-if="goal.deadline" class="mt-auto">
+                    <span v-if="(new Date(goal.deadline) - new Date()) > 86400000" class="text-gray-500">
+                      {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left
+                    </span>
+                    <span v-else-if="(new Date(goal.deadline) - new Date()) > 0" class="text-red-700 font-semibold">
+                      {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left
+                    </span>
+                    <span v-else class="text-gray-500">
+                      Overdue
+                    </span>
+                  </div>
+
+                  <div class="flex flex-grow justify-end items-center mt-auto space-x-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 10H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span v-if="goal.deadline" class="text-gray-500">
+                      {{ new Date(goal.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+                    </span>
+                    <span v-else class="text-gray-500 italic">No deadline</span>
+                  </div>
+                </div>
+                
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-2 mt-4">
+                <button
+                  @click="toggleGoalCompletion(goal)"
+                  :class="[
+                    'flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl font-medium transition-all duration-200',
+                    goal.completed
+                      ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/25'
+                      : 'bg-[#B03052] text-white hover:bg-[#8B2440] hover:text-white'
+                  ]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 11L12 14L22 4M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C13.1257 3 14.1978 3.2284 15.1808 3.6358" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ goal.completed ? 'Completed' : 'Complete' }}
+                </button>
+                
+                <button
+                  @click="openEditForm(goal)"
+                  class="px-3 py-2.5 bg-white text-[#B03052] rounded-xl hover:bg-[#B03052] hover:text-white transition-all duration-200 border-2 border-[#B03052]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M11 4H4C3.44772 4 3 4.44772 3 5V20C3 20.5523 3.44772 21 4 21H19C19.5523 21 20 20.5523 20 20V13M18.5 2.5C19.3284 1.67157 20.6716 1.67157 21.5 2.5C22.3284 3.32843 22.3284 4.67157 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                
+                <button
+                  @click="deleteGoal(goal.id)"
+                  class="px-3 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 10V17M10 10V17M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H8M6 7H4M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M16 7H18M16 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -139,26 +175,60 @@
               </svg>
             </div>
           </div>
-          <div v-else-if="groupGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
-            <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md border border-[#D76C82]/10 p-6 flex flex-col h-80 hover:shadow-lg transition-shadow duration-300">
-              <div class="flex-grow flex flex-col">
-                <h3 class="text-xl font-bold text-gray-800 mb-3">{{ goal.title }}</h3>
-                <p class="text-gray-600 mb-2">{{ goal.description }}</p>
-                <div v-if="goal.season && goal.episode" class="text-sm text-gray-500 mb-2">
+          <div v-else-if="groupGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div v-for="goal in groupGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col min-h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col overflow-hidden">
+                <h3 class="text-xl font-bold text-gray-800 my-3 break-words">{{ goal.title }}</h3>
+                <p class="text-gray-600 mb-3 break-words">{{ goal.description }}</p>
+                <div v-if="goal.season && goal.episode" class="text-gray-600 mb-2">
                   Season: {{ goal.season }} Episode: {{ goal.episode }}
                 </div>
-                <div class="text-sm text-gray-500 mb-2">Group: {{ goal.group.name }}</div>
-                <div v-if="goal.deadline" class="text-sm">
-                  <span v-if="(new Date(goal.deadline) - new Date()) > 86400000" class="text-gray-500">
-                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left
-                  </span>
-                  <span v-else-if="(new Date(goal.deadline) - new Date()) > 0" class="text-red-500">
-                    {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left
-                  </span>
-                  <span v-else class="text-gray-500">
-                    Deadline passed: {{ new Date(goal.deadline).toLocaleDateString() }}
-                  </span>
+                <div class="text-sm text-[#B03052] font-semibold mb-2">Group: {{ goal.group.name }}</div>
+                
+                <!-- Progress Section -->
+                <div class="my-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-600 text-sm font-medium">Progress</span>
+                    <span class="text-[#B03052] text-sm font-bold">{{ goal.progress || 0 }}%</span>
+                  </div>
+                  <div class="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      class="absolute top-0 left-0 h-full bg-gradient-to-r from-[#B03052] to-[#D76C82] rounded-full transition-all duration-700 ease-out"
+                      :style="{ width: `${goal.progress || 0}%` }"
+                    />
+                  </div>
                 </div>
+                
+                <div class="flex flex-row mt-auto space-x-2">
+                  <div v-if="goal.deadline" class="mt-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 7V12L14.5 10.5M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+
+                  <div v-if="goal.deadline" class="mt-auto">
+                    <span v-if="(new Date(goal.deadline) - new Date()) > 86400000" class="text-gray-500">
+                      {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24)) }} days left
+                    </span>
+                    <span v-else-if="(new Date(goal.deadline) - new Date()) > 0" class="text-red-700 font-semibold">
+                      {{ Math.floor((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60)) }} hours left
+                    </span>
+                    <span v-else class="text-gray-500">
+                      Deadline passed: {{ new Date(goal.deadline).toLocaleDateString() }}
+                    </span>
+                  </div>
+
+                  <div class="flex flex-grow justify-end items-center mt-auto space-x-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 10H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span v-if="goal.deadline" class="text-gray-500">
+                      {{ new Date(goal.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+                    </span>
+                    <span v-else class="text-gray-500 italic">No deadline</span>
+                  </div>
+                </div>
+                
               </div>
               <div class="mb-2">
                 <div v-if="goalToUpdate && goalToUpdate.id === goal.id">
@@ -179,36 +249,40 @@
                   </button>
                 </div>
               </div>
-              <div class="relative mt-4 self-end">
+              <!-- Action Buttons -->
+              <div class="flex gap-2 mt-4">
                 <button
-                  @click="toggleDropdown(goal.id)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                  @click="toggleGoalCompletion(goal)"
+                  :class="[
+                    'flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl font-medium transition-all duration-200',
+                    goal.completed
+                      ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/25'
+                      : 'bg-[#B03052] text-white hover:bg-[#8B2440] hover:text-white'
+                  ]"
                 >
-                  Options
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 11L12 14L22 4M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C13.1257 3 14.1978 3.2284 15.1808 3.6358" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ goal.completed ? 'Completed' : 'Complete' }}
+                </button>
+                
+                <button
+                  @click="openEditForm(goal)"
+                  class="px-3 py-2.5 bg-white text-[#B03052] rounded-xl hover:bg-[#B03052] hover:text-white transition-all duration-200 border-2 border-[#B03052]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M11 4H4C3.44772 4 3 4.44772 3 5V20C3 20.5523 3.44772 21 4 21H19C19.5523 21 20 20.5523 20 20V13M18.5 2.5C19.3284 1.67157 20.6716 1.67157 21.5 2.5C22.3284 3.32843 22.3284 4.67157 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
-
-                <div
-                  v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                
+                <button
+                  @click="deleteGoal(goal.id)"
+                  class="px-3 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600"
                 >
-                  <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
-                    <button
-                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
-                      @click="toggleGoalCompletion(goal)"
-                    >
-                      Mark as Completed
-                    </button>
-                    <button
-                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
-                      @click="deleteGoal(goal.id)"
-                    >
-                      Delete Goal
-                    </button>
-                  </div>
-                </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 10V17M10 10V17M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H8M6 7H4M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M16 7H18M16 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -226,55 +300,134 @@
               </svg>
             </div>
           </div>
-          <div v-else-if="completedGoalsByCategory.length > 0" class="grid grid-cols-4 gap-4">
-            <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md border border-[#D76C82]/10 p-6 flex flex-col h-80 hover:shadow-lg transition-shadow duration-300">
-              <div class="flex-grow flex flex-col">
-                <h3 class="text-xl font-bold text-gray-800 mb-3">{{ goal.title }}</h3>
-                <p class="text-gray-600 mb-2">{{ goal.description }}</p>
-                <div v-if="goal.season && goal.episode" class="text-sm text-gray-500 mb-2">
+          <div v-else-if="completedGoalsByCategory.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div v-for="goal in completedGoalsByCategory" :key="goal.id" class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col min-h-[280px] border border-[#D76C82]/10 opacity-75">
+              <div class="flex-grow flex flex-col overflow-hidden">
+                <h3 class="text-xl font-bold text-gray-800 my-3 break-words">{{ goal.title }}</h3>
+                <p class="text-gray-600 mb-3 break-words">{{ goal.description }}</p>
+                <div v-if="goal.season && goal.episode" class="text-gray-600 mb-2">
                   Season: {{ goal.season }} Episode: {{ goal.episode }}
                 </div>
-                <div v-if="goal.deadline" class="text-sm text-gray-500">
-                  {{ new Date(goal.deadline).toLocaleDateString() }}
+                <div v-if="goal.group" class="text-sm text-[#B03052] font-semibold mb-2">Group: {{ goal.group.name }}</div>
+                
+                <div class="flex flex-row mt-auto space-x-2">
+                  <div class="flex items-center space-x-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 11L12 14L22 4M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C13.1257 3 14.1978 3.2284 15.1808 3.6358" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="text-green-600 font-semibold">Completed</span>
+                  </div>
+                  
+                  <div class="flex flex-grow justify-end items-center mt-auto space-x-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 10H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span v-if="goal.deadline" class="text-gray-500">
+                      {{ new Date(goal.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }}
+                    </span>
+                    <span v-else class="text-gray-500 italic">No deadline</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="relative mt-4 self-end">
+              <!-- Action Buttons -->
+              <div class="flex gap-2 mt-4">
                 <button
-                  @click="toggleDropdown(goal.id)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                  @click="redoGoal(goal)"
+                  class="flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl font-medium transition-all duration-200 bg-green-600 text-white hover:bg-green-700 hover:text-white"
                 >
-                  Options
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12V9C4 5.68629 6.68629 3 10 3H20M20 3L17 6M20 3L17 0M20 12V15C20 18.3137 17.3137 21 14 21H4M4 21L7 18M4 21L7 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Re-Do Goal
+                </button>
+                
+                <button
+                  @click="deleteGoal(goal.id)"
+                  class="px-3 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 10V17M10 10V17M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H8M6 7H4M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M16 7H18M16 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
-
-                <div
-                  v-bind:class="{'visible': openGoalId === goal.id, 'hidden': openGoalId !== goal.id}"
-                  class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                >
-                  <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="actions-menu">
-                    <button 
-                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
-                      @click="redoGoal(goal)"
-                    >
-                      Re-Do Goal
-                    </button>
-                    <button
-                      class="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm w-full text-left"
-                      @click="deleteGoal(goal.id)"
-                    >
-                      Delete Goal
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div v-else class="text-center mt-4">
             <p>No completed goals found in this category.</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Edit Goal Modal -->
+      <div v-if="showEditForm && editingGoal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm z-50">
+        <div class="max-w-lg w-full p-6 bg-white rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold mb-4 text-center">Edit Goal Progress</h2>
+          <form @submit.prevent="updateGoal">
+            
+            <!-- Progress Slider -->
+            <div class="mb-6">
+              <label for="progress" class="block text-sm font-medium text-gray-700 mb-2">
+                Progress: {{ editingGoal.progress }}%
+              </label>
+              <input 
+                type="range" 
+                id="progress" 
+                v-model="editingGoal.progress" 
+                min="0" 
+                max="100" 
+                step="5"
+                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <div class="flex justify-between text-xs text-gray-600 mt-1">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <!-- Series-specific fields -->
+            <div v-if="editingGoal.category === 'Series'" class="space-y-4">
+              <div>
+                <label for="editSeason" class="block text-sm font-medium text-gray-700 mb-1">Season:</label>
+                <input 
+                  type="number" 
+                  id="editSeason" 
+                  v-model="editingGoal.season" 
+                  min="1" 
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
+                />
+              </div>
+              <div>
+                <label for="editEpisode" class="block text-sm font-medium text-gray-700 mb-1">Episode:</label>
+                <input 
+                  type="number" 
+                  id="editEpisode" 
+                  v-model="editingGoal.episode" 
+                  min="1" 
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
+                />
+              </div>
+            </div>
+
+            <div class="flex justify-between space-x-2 mt-6">
+              <button 
+                type="submit" 
+                class="bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#8B2440] transition duration-300"
+              >
+                Update Goal
+              </button>
+              <button 
+                @click="closeEditForm" 
+                type="button" 
+                class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -373,6 +526,7 @@ import { ref  } from 'vue';
 import { useStore } from 'vuex';
 import axios from 'axios';
 import { useToast } from "vue-toastification";
+import { eventBus } from '@/eventBus';
 
 
 export default {
@@ -394,6 +548,8 @@ export default {
       openGoalId: null,
       selectedGroup: '',
       showForm: false,
+      showEditForm: false,
+      editingGoal: null,
       showPersonalGoals: true,
       showGroupGoals: false,
       showCompletedGoals: false,
@@ -411,8 +567,9 @@ export default {
       groups: [],
       goals: [],
       loadingGoals: false,
-      selectedCategory: 'Books',
+      selectedCategory: 'All',
       goalCategories: [
+        'All',
         'Books',
         'Coding',
         'Cooking',
@@ -435,6 +592,14 @@ export default {
     },
 
     personalGoalsByCategory() {
+      if(this.selectedCategory === 'All') {
+        return this.goals.filter(
+          (goal) =>
+            !goal.is_group_goal &&
+            !goal.completed &&
+            goal.user_id === this.userId
+        );
+      }
       return this.goals.filter(
         (goal) =>
           !goal.is_group_goal &&
@@ -445,6 +610,14 @@ export default {
     },
 
     groupGoalsByCategory() {
+      if(this.selectedCategory === 'All') {
+        return this.goals.filter(
+          (goal) =>
+            goal.is_group_goal &&
+            !goal.completed &&
+            this.userGroups.some((group) => group.id === goal.group_id)
+        );
+      }
       return this.goals.filter(
         (goal) =>
           goal.is_group_goal &&
@@ -455,6 +628,14 @@ export default {
     },
 
     completedGoalsByCategory() {
+      if(this.selectedCategory === 'All') {
+        return this.goals.filter(
+          (goal) =>
+            goal.completed &&
+            (this.userGroups.some((group) => group.id === goal.group_id) ||
+              goal.user_id === this.userId)
+        );
+      }
       return this.goals.filter(
         (goal) =>
           goal.category === this.selectedCategory &&
@@ -522,6 +703,57 @@ export default {
       this.goalToUpdate = null;
     },
 
+    openEditForm(goal) {
+      this.editingGoal = { 
+        ...goal,
+        progress: goal.progress !== undefined ? goal.progress : 0,
+        season: goal.season || '',
+        episode: goal.episode || ''
+      };
+      console.log('Opening edit form for goal:', goal);
+      console.log('Editing goal progress:', this.editingGoal.progress);
+      this.showEditForm = true;
+    },
+
+    closeEditForm() {
+      this.showEditForm = false;
+      this.editingGoal = null;
+    },
+
+    async updateGoal() {
+      try {
+        const updateData = {
+          progress: parseInt(this.editingGoal.progress)
+        };
+        
+        if (this.editingGoal.category === 'Series') {
+          updateData.season = parseInt(this.editingGoal.season) || this.editingGoal.season;
+          updateData.episode = parseInt(this.editingGoal.episode) || this.editingGoal.episode;
+        }
+        
+        console.log('Updating goal with data:', updateData);
+        
+        await axios.put(`/goals/${this.editingGoal.id}`, updateData);
+        
+        // Update the goal in the existing array instead of fetching all goals
+        const goalIndex = this.goals.findIndex(g => g.id === this.editingGoal.id);
+        if (goalIndex !== -1) {
+          // Preserve the original goal's position by updating in place
+          this.goals[goalIndex] = {
+            ...this.goals[goalIndex],
+            ...updateData,
+            progress: updateData.progress
+          };
+        }
+        
+        this.toast.success('Goal updated successfully!');
+        this.closeEditForm();
+      } catch (error) {
+        this.toast.error('Error updating goal: ' + error.response?.data?.message || error.message);
+        console.error('Error updating goal:', error);
+      }
+    },
+
     selectCategory(category) {
       this.selectedCategory = category;
     },
@@ -577,9 +809,22 @@ export default {
       await this.fetchUserDetails();
       await this.fetchGoals();
       await this.fetchGroups();
+      
+      // Listen for goal-added event to refresh the list
+      this.handleGoalAdded = () => {
+        this.fetchGoals();
+      };
+      eventBus.on('goal-added', this.handleGoalAdded);
     } catch (error) {
       this.toast.error('Error initializing goals view.');
       console.error('Error during component mount:', error);
+    }
+  },
+  
+  unmounted() {
+    // Clean up event listener
+    if (this.handleGoalAdded) {
+      eventBus.off('goal-added', this.handleGoalAdded);
     }
   },
 };
@@ -594,5 +839,51 @@ export default {
 
 .transition-transform {
   transition: transform 0.3s;
+}
+
+/* Custom slider styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #B03052;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #B03052;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #B03052 0%, #B03052 var(--progress), #e5e7eb var(--progress), #e5e7eb 100%);
+}
+
+/* Fallback for line-clamp if not supported */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure word breaking for long text */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 </style>

@@ -42,6 +42,9 @@ class Goal(db.Model):
     # New columns for season and episode
     season = db.Column(db.Integer, nullable=True)
     episode = db.Column(db.Integer, nullable=True)
+    
+    # Progress tracking
+    progress = db.Column(db.Integer, default=0)  # Progress percentage (0-100)
 
     # Relationship to group for eager loading
     group = db.relationship('Group', backref='group_goals', lazy='joined')
@@ -70,6 +73,7 @@ class Goal(db.Model):
             'category': self.category,
             'season': self.season,  # Include season if applicable
             'episode': self.episode,  # Include episode if applicable
+            'progress': self.progress,  # Include progress percentage
         }
 
 class Group(db.Model):

@@ -8,7 +8,7 @@
             v-model="username" 
             type="text" 
             placeholder="Username" 
-            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
             required
           />
         </div>
@@ -17,7 +17,7 @@
             v-model="email" 
             type="email" 
             placeholder="Email" 
-            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
             required
           />
         </div>
@@ -26,19 +26,19 @@
             v-model="password" 
             type="password" 
             placeholder="Password" 
-            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
             required
           />
         </div>
         <button 
           type="submit"
-          class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition duration-300"
+          class="w-full bg-[#B03052] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#8B2440] transition duration-300"
         >
           Sign Up
         </button>
       </form>
       <div class="my-4">
-          <p class="text-center">Already have an account? <router-link to="/login" class="text-blue-500">Log In</router-link></p>
+          <p class="text-center">Already have an account? <router-link to="/login" class="text-[#B03052]">Log In</router-link></p>
       </div>
     </div>   
   </div>

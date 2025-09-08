@@ -38,14 +38,31 @@
       <div class="max-w-lg w-full p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-2xl font-semibold mb-4 text-center">Create New Goal</h2>
         <form @submit.prevent="addGoal">
+          <!-- Debug info - remove after testing -->
+          <div v-if="false" class="mb-2 p-2 bg-gray-100 text-sm">
+            Debug: goalType={{ goalType }}, userGroups.length={{ userGroups.length }}
+          </div>
+          
           <div class="mb-4 flex items-center justify-center">
             <div class="flex gap-4">
-              <label class="inline-flex items-center">
-                <input type="radio" name="goalType" v-model="goalType" value="personal" class="form-radio" />
+              <label class="inline-flex items-center cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="goalType" 
+                  v-model="goalType" 
+                  value="personal" 
+                  class="form-radio text-[#D76C82] focus:ring-[#D76C82]" 
+                />
                 <span class="ml-2">Personal Goal</span>
               </label>
-              <label v-if="userGroups.length > 0" class="inline-flex items-center">
-                <input type="radio" name="goalType" v-model="goalType" value="group" class="form-radio" />
+              <label v-if="userGroups && userGroups.length > 0" class="inline-flex items-center cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="goalType" 
+                  v-model="goalType" 
+                  value="group" 
+                  class="form-radio text-[#D76C82] focus:ring-[#D76C82]" 
+                />
                 <span class="ml-2">Group Goal</span>
               </label>
             </div>
@@ -118,7 +135,7 @@
 
           <div class="mb-4">
             <textarea
-              v-model="description"
+              v-model="groupDescription"
               placeholder="Group Description"
               class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82] resize-none h-32"
             ></textarea>
@@ -150,6 +167,7 @@
 import { useStore } from 'vuex';
 import { useToast } from "vue-toastification";
 import axios from 'axios';
+import { eventBus } from '@/eventBus';
 
 export default {
   setup() {
@@ -192,6 +210,10 @@ export default {
   methods: {
     toggleButtons() {
       this.showForm = !this.showForm;
+      // Fetch user groups when opening the form
+      if (this.showForm) {
+        this.fetchUserGroups();
+      }
     },
     async addGoal() {
       if (!this.title) {
@@ -236,6 +258,8 @@ export default {
         this.showForm = false;
         this.toast.success('Goal added successfully.');
         this.$emit('goal-added', response.data);
+        // Emit event to refresh goals list
+        eventBus.emit('goal-added', response.data);
       } catch (error) {
         console.error("Error adding goal:", error);
         this.toast.error('Goal could not be added. Please try again.');
@@ -260,12 +284,22 @@ export default {
     async fetchUserGroups() {
       try {
         const response = await axios.get('/user');
-        this.userGroups = response.data.groups;
+        console.log('User data response:', response.data);
+        this.userGroups = response.data.groups || [];
+        console.log('User groups loaded:', this.userGroups);
+        
+        // If user has no groups, show a message
+        if (this.userGroups.length === 0) {
+          console.log('User has no groups');
+        }
       } catch (error) {
+        console.error('Error fetching user groups:', error);
         if (error.response?.status === 401) {
           this.userGroups = [];
+          console.log('User not authenticated');
         } else {
-          console.error('Error fetching user groups:', error);
+          this.userGroups = [];
+          this.toast.error('Failed to load groups. Please try again.');
         }
       }
     },
@@ -285,6 +319,8 @@ export default {
         this.clearGroupForm();
         this.showGroupForm = false;
         await this.fetchUserGroups();
+        // Emit event to refresh groups list
+        eventBus.emit('group-added');
       } catch (error) {
         console.error('Error creating group:', error);
         this.toast.error('An error occurred while creating the group.');
@@ -294,6 +330,14 @@ export default {
   async mounted() {
     this.toast = useToast();
     await this.fetchUserGroups();
+  },
+  watch: {
+    goalType(newVal) {
+      console.log('Goal type changed to:', newVal);
+    },
+    selectedGroup(newVal) {
+      console.log('Selected group changed to:', newVal);
+    }
   },
   computed: {
     isAuthenticated() {

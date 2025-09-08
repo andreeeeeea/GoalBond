@@ -237,57 +237,45 @@
               </svg>
             </div>
           </div>
-          <div v-else-if="groups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-else-if="groups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             <div v-for="group in groups" :key="group.id" 
-                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[280px] border border-[#D76C82]/10">
-              <div class="flex-grow flex flex-col">
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col min-h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col overflow-hidden">
+                <h3 class="text-xl font-bold text-gray-800 my-3 break-words">
                   {{ group.name }} 
-                  <span v-if="!group.is_public" class="text-sm text-red-500">(Private)</span>
+                  <span v-if="!group.is_public" class="text-[#B03052] text-sm font-semibold">(Private)</span>
                 </h3>
-                <p v-if="group.description" class="text-gray-600 mb-3 line-clamp-2">{{ group.description }}</p>
-                <div class="mt-auto space-y-1">
-                  <p class="text-sm text-gray-600">
+                <p class="text-gray-600 mb-3 break-words">{{ group.description }}</p>
+                <div class="mt-auto">
+                  <div class="text-sm text-gray-600 mb-2">
                     <span class="font-medium">Owner:</span> {{ group.owner.username }}
-                  </p>
-                  <p class="text-sm text-gray-600">
+                  </div>
+                  <div class="text-sm text-gray-600">
                     <span class="font-medium">Members:</span> {{ group.members.length }}
-                  </p>
+                  </div>
                 </div>
               </div>
               
-              <!-- Options Button -->
-              <div class="relative mt-4 self-end">
+              <!-- Action Buttons -->
+              <div class="flex gap-2 mt-4">
                 <button
-                  @click="toggleGroupDropdown(group.id)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                  @click="leaveGroup(group.id)"
+                  class="flex-1 px-4 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600 font-medium"
                 >
-                  Options
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Leave
+                </button>
+                <button
+                  v-if="group.owner.id === currentUser.id"
+                  @click="deleteGroup(group.id)"
+                  class="px-3 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 10V17M10 10V17M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H8M6 7H4M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M16 7H18M16 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
-
-                <div
-                  v-show="openGroupId === group.id"
-                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
-                >
-                  <div class="py-1" role="menu">
-                    <button
-                      @click="leaveGroup(group.id)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Leave Group
-                    </button>
-                    <button
-                      v-if="group.owner.id === currentUser.id"
-                      @click="deleteGroup(group.id)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Delete Group
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -325,58 +313,47 @@
               </svg>
             </div>
           </div>
-          <div v-else-if="availableGroups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-else-if="availableGroups.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             <div v-for="group in availableGroups" :key="group.id" 
-                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col h-[280px] border border-[#D76C82]/10">
-              <div class="flex-grow flex flex-col">
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col min-h-[280px] border border-[#D76C82]/10">
+              <div class="flex-grow flex flex-col overflow-hidden">
+                <h3 class="text-xl font-bold text-gray-800 my-3 break-words">
                   {{ group.name }}
-                  <span v-if="!group.is_public" class="text-sm text-red-500">(Private)</span>
+                  <span v-if="!group.is_public" class="text-[#B03052] text-sm font-semibold">(Private)</span>
                 </h3>
-                <p v-if="group.description" class="text-gray-600 mb-3 line-clamp-2">{{ group.description }}</p>
-                <div class="mt-auto space-y-1">
-                  <p class="text-sm text-gray-600">
+                <p v-if="group.description" class="text-gray-600 mb-3 break-words">{{ group.description }}</p>
+                <div class="mt-auto">
+                  <div class="text-sm text-gray-600 mb-2">
                     <span class="font-medium">Owner:</span> {{ group.owner.username }}
-                  </p>
-                  <p class="text-sm text-gray-600">
+                  </div>
+                  <div class="text-sm text-gray-600">
                     <span class="font-medium">Members:</span> {{ group.members.length }}
-                  </p>
+                  </div>
                 </div>
               </div>
               
-              <!-- Options Button -->
-              <div class="relative mt-4 self-end">
+              <!-- Action Buttons -->
+              <div class="flex gap-2 mt-4">
                 <button
-                  @click="toggleGroupDropdown(group.id)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-[#D76C82]/20 rounded-md hover:bg-[#D76C82]/10 transition-colors duration-300"
+                  v-if="group.isMember"
+                  @click="leaveGroup(group.id)"
+                  class="flex-1 px-4 py-2.5 bg-white text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-200 border-2 border-red-600 font-medium"
                 >
-                  Options
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
+                  Leave
                 </button>
-
-                <div
-                  v-show="openGroupId === group.id"
-                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                <button
+                  v-else
+                  @click="joinGroup(group.id)"
+                  class="flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl font-medium transition-all duration-200 bg-[#B03052] text-white hover:bg-[#8B2440]"
                 >
-                  <div class="py-1" role="menu">
-                    <button
-                      v-if="group.isMember"
-                      @click="leaveGroup(group.id)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Leave Group
-                    </button>
-                    <button
-                      v-else
-                      @click="joinGroup(group.id)"
-                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#D76C82]/10 hover:text-[#B03052]"
-                    >
-                      Join Group
-                    </button>
-                  </div>
-                </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 3V5M14 5V7M14 5H16M14 5H12M19 10V21H5V10M10 21V15H14V21M3 10L12 3L21 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Join Group
+                </button>
               </div>
             </div>
           </div>

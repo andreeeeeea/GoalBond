@@ -10,7 +10,7 @@
     "build-css:prod": "tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/output.css --minify"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "axios": "^1.11.0",
     "core-js": "^3.8.3",
     "vue": "^3.5.11",
     "vue-router": "^4.4.5",

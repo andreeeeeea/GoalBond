@@ -47,7 +47,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Update CORS configuration to allow specific methods without preflight
 CORS(app, resources={r"/*": {
-    "origins": ["https://goalbond.netlify.app"],
+    "origins": ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"],
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Content-Type", "Authorization"],
     "supports_credentials": True,
@@ -285,8 +285,8 @@ def create_goal():
 def get_goals():
     user_id = current_user.id  # Optional user ID to filter goals by user
 
-    # Retrieve goals for the user, whether personal or group-related
-    goals = Goal.query.filter((Goal.user_id == user_id) | (Goal.group_id.isnot(None))).all()
+    # Retrieve goals for the user, whether personal or group-related, ordered by creation date
+    goals = Goal.query.filter((Goal.user_id == user_id) | (Goal.group_id.isnot(None))).order_by(Goal.created_at.desc()).all()
 
     return jsonify([goal.to_dict() for goal in goals]), 200
  
@@ -305,6 +305,10 @@ def update_goal(goal_id):
     # Update completed status if provided
     if 'completed' in data:
         goal.completed = data['completed']  # Update the completed status
+    
+    # Update progress if provided
+    if 'progress' in data:
+        goal.progress = data['progress']  # Update the progress percentage
 
     # Update season and episode if the goal is a series
     if goal.category == 'Series':
@@ -326,7 +330,8 @@ def update_goal(goal_id):
             'user_id': goal.user_id,
             'group_id': goal.group_id,  # Include group_id if applicable
             'season': goal.season,  # Include season in the response
-            'episode': goal.episode   # Include episode in the response
+            'episode': goal.episode,   # Include episode in the response
+            'progress': goal.progress  # Include progress in the response
         }
     }), 200
 
@@ -553,11 +558,66 @@ def forgot_password():
         if user:
             # Generate password reset token
             token = serializer.dumps(email, salt='reset-password')
-            reset_link = url_for('reset_password', token=token, _external=True)
+            
+            # Create frontend URL for password reset
+            # Check multiple headers to determine the frontend URL
+            origin = request.headers.get('Origin')
+            referer = request.headers.get('Referer')
+            
+            # Default to production URL
+            frontend_url = "https://goalbond.netlify.app"
+            
+            # Check if request is from localhost
+            if origin and ('localhost' in origin or '127.0.0.1' in origin):
+                frontend_url = origin
+            elif referer and ('localhost' in referer or '127.0.0.1' in referer):
+                # Extract base URL from referer
+                from urllib.parse import urlparse
+                parsed = urlparse(referer)
+                frontend_url = f"{parsed.scheme}://{parsed.netloc}"
+            elif request.host and ('localhost' in request.host or '127.0.0.1' in request.host):
+                # If backend is running locally, assume frontend is too
+                frontend_url = "http://localhost:8080"
+            
+            reset_link = f"{frontend_url}/reset_password?token={token}"
+            
+            # Log for debugging
+            app.logger.info(f"Password reset requested from: Origin={origin}, Referer={referer}, Host={request.host}")
+            app.logger.info(f"Generated reset link: {reset_link}")
 
             # Send reset email
             msg = Message('Password Reset Request', recipients=[email])
-            msg.body = f'Click the link to reset your password: {reset_link}'
+            msg.html = f'''
+            <html>
+                <body>
+                    <h2>Password Reset Request</h2>
+                    <p>Hello,</p>
+                    <p>You have requested to reset your password for your GoalBond account.</p>
+                    <p>Please click the link below to reset your password:</p>
+                    <p><a href="{reset_link}" style="background-color: #B03052; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p>{reset_link}</p>
+                    <p>This link will expire in 1 hour.</p>
+                    <p>If you did not request this password reset, please ignore this email.</p>
+                    <p>Best regards,<br>The GoalBond Team</p>
+                </body>
+            </html>
+            '''
+            msg.body = f'''
+Hello,
+
+You have requested to reset your password for your GoalBond account.
+
+Please click the link below to reset your password:
+{reset_link}
+
+This link will expire in 1 hour.
+
+If you did not request this password reset, please ignore this email.
+
+Best regards,
+The GoalBond Team
+            '''
             mail.send(msg)
 
             return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
@@ -569,41 +629,27 @@ def forgot_password():
         app.logger.error(f"Error in forgot_password route: {str(e)}")
         return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
        
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@app.route('/reset_password/<token>', methods=['POST'])
 def reset_password(token):
     try:
-        if request.method == 'GET':
-            try:
-                email = serializer.loads(token, salt='reset-password', max_age=3600)
-            except (SignatureExpired, BadSignature) as e:
-                return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
+        try:
+            email = serializer.loads(token, salt='reset-password', max_age=3600)
+        except (SignatureExpired, BadSignature) as e:
+            return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
 
-            user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email).first()
 
-            if not user:
-                return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
 
-            return redirect("/reset_password?token=" + token)
+        new_password = request.json.get('password')
+        if not new_password:
+            return jsonify({'success': False, 'message': 'New password is required.'}), 400
 
-        elif request.method == 'POST':
-            try:
-                email = serializer.loads(token, salt='reset-password', max_age=3600)
-            except (SignatureExpired, BadSignature) as e:
-                return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
+        user.set_password(new_password)
+        db.session.commit()
 
-            user = User.query.filter_by(email=email).first()
-
-            if not user:
-                return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
-
-            new_password = request.json.get('password')
-            if not new_password:
-                return jsonify({'success': False, 'message': 'New password is required.'}), 400
-
-            user.set_password(new_password)
-            db.session.commit()
-
-            return jsonify({'success': True, 'message': 'Your password has been updated!'}), 200
+        return jsonify({'success': True, 'message': 'Your password has been updated!'}), 200
 
     except Exception as e:
         app.logger.error(f"Error in reset_password: {str(e)}")

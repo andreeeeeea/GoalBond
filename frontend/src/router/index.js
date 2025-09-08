@@ -3,7 +3,6 @@ import HomeView from '../components/HomeView.vue';
 import LoginView from '../components/LoginForm.vue';
 import SignupView from '../components/SignUpForm.vue';
 import GoalsList from '@/components/GoalsList.vue';
-import GroupView from '@/components/GroupView.vue';
 import AccountView from '@/components/AccountView.vue';
 import ForgotPassword from '@/components/ForgotPassword.vue';
 import ResetPassword from '@/components/ResetPassword.vue';
@@ -32,12 +31,6 @@ const routes = [
     path: '/goals',
     name: 'goals',
     component: GoalsList,
-    meta: { requiresAuth: true }, // Protect this route
-  },
-  {
-    path: '/groups',
-    name: 'groups',
-    component: GroupView,
     meta: { requiresAuth: true }, // Protect this route
   },
   {
