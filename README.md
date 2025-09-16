@@ -4,15 +4,6 @@
 
 ### Link: https://goalbond.netlify.app/
 
-### Screenshots
-
-![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot1.jpg?raw=true)
-![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot2.jpg?raw=true)
-![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot3.jpg?raw=true)
-![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot4.jpg?raw=true)
-![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot5.jpg?raw=true)
-
-
 GoalBond was born out of a personal need — I wanted a simple, distraction-free space to set goals, track progress, and even keep tabs on the shows I’m watching. 
 Existing tools felt bloated or too simple, so I built my own.
 
@@ -27,6 +18,15 @@ With GoalBond you can...
 - Dashboard: see all your goals at a glance.
 - Goal creation: add, edit, and track progress easily.
 - Groups: create or join groups to share goals with friends or teams.
+
+### Screenshots
+
+![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot1.jpg?raw=true)
+![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot2.jpg?raw=true)
+![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot3.jpg?raw=true)
+![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot4.jpg?raw=true)
+![alt text](https://github.com/andreeeeeea/GoalBond/blob/main/Screenshot5.jpg?raw=true)
+
 
 ### Tech Stack
 - Frontend: Vue.js + Tailwind CSS
