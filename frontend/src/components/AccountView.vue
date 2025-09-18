@@ -804,7 +804,7 @@ export default {
           return;
         }
 
-        const response = await axios.put('/update-user', updatedFields);
+        await axios.put('/update-user', updatedFields);
         
         this.toast.success('Account details updated successfully.');
         
@@ -881,7 +881,6 @@ export default {
       } catch (error) {
         if (error.response?.status === 401) {
           this.groups = [];
-        } else {
         }
       } finally {
         this.loadingGroups = false;
@@ -896,7 +895,6 @@ export default {
       } catch (error) {
         if(error.response?.status === 401) {
           this.publicGroups = [];
-        } else {
         }
       }
     },
@@ -917,7 +915,6 @@ export default {
       } catch (error) {
         if (error.response?.status === 401) {
           this.availableGroups = [];
-        } else {
         }
       } finally {
         this.loadingAvailableGroups = false;
@@ -1027,6 +1024,7 @@ export default {
           user => !this.selectedGroup.members.some(member => member.id === user.id)
         );
       } catch (error) {
+        // Error handled silently
       } finally {
         this.searchingUsers = false;
       }
@@ -1056,6 +1054,7 @@ export default {
         const response = await axios.get(`/groups/${groupId}/invitations`);
         this.groupInvitations = response.data;
       } catch (error) {
+        // Error handled silently
       }
     },
     async cancelInvitation(invitationId) {
@@ -1074,6 +1073,7 @@ export default {
         this.pendingInvitations = response.data;
       } catch (error) {
         if (error.response?.status !== 401) {
+          // Non-401 errors handled silently
         }
       } finally {
         this.loadingInvitations = false;
@@ -1133,7 +1133,7 @@ export default {
     },
     async updateGroup() {
       try {
-        const response = await axios.put(`/groups/${this.editGroupForm.id}`, {
+        await axios.put(`/groups/${this.editGroupForm.id}`, {
           name: this.editGroupForm.name,
           description: this.editGroupForm.description,
           is_public: this.editGroupForm.is_public,
