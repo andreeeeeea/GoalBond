@@ -70,6 +70,26 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = jsonify({'status': 'OK'})
+        response.headers.add("Access-Control-Allow-Origin", request.headers.get("Origin", "*"))
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type, Authorization")
+        response.headers.add('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
 
 ##### User methods
 
@@ -194,7 +214,7 @@ def logout():
     return jsonify({'message': 'Logout successful!'}), 200
 
 # User Update
-@app.route('/T-user', methods=['PUT'])
+@app.route('/update-user', methods=['PUT'])
 @login_required
 def update_user():
     data = request.get_json()
