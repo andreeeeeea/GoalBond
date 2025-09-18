@@ -806,13 +806,11 @@ export default {
 
         const response = await axios.put('/update-user', updatedFields);
         
-        console.log('Account updated:', response.data);
         this.toast.success('Account details updated successfully.');
         
         // Update the store with new user info
         await this.$store.dispatch('checkAuth');
       } catch (error) {
-        console.error('Error updating account:', error); 
         this.toast.error('An error occurred while updating the account');
       }
     },
@@ -856,7 +854,6 @@ export default {
         this.form.confirmPassword = '';
         this.showPasswordSection = false;
       } catch (error) {
-        console.error('Error updating password:', error); 
         this.toast.error('An error occurred while updating the password');
       }
     },
@@ -869,11 +866,9 @@ export default {
             this.$store.dispatch('logout');
             this.$router.push('/');
           } else {
-            console.log('Error deleting account:', response.data.message);
             this.toast.error('Failed to delete account. Please try again.');
           }
         } catch (error) {
-          console.error("Error deleting account:", error);
           this.toast.error('Failed to delete account. Please try again.');
         }
       }
@@ -887,7 +882,6 @@ export default {
         if (error.response?.status === 401) {
           this.groups = [];
         } else {
-          console.log('Error fetching user groups:', error);
         }
       } finally {
         this.loadingGroups = false;
@@ -903,7 +897,6 @@ export default {
         if(error.response?.status === 401) {
           this.publicGroups = [];
         } else {
-          console.error('Error fetching public groups:', error);
         }
       }
     },
@@ -912,10 +905,6 @@ export default {
       try {
         // Get all public groups first
         const response = await axios.get('/groups');
-        console.log('All groups from API:', response.data);
-        console.log('Current user:', this.currentUser);
-        console.log('Username:', this.username);
-        
         // Show all public groups, marking which ones the user is already in
         const publicGroups = response.data.filter(group => group.is_public);
         
@@ -925,12 +914,10 @@ export default {
           isMember: group.members.some(member => member.username === this.username)
         }));
         
-        console.log('Available groups with membership status:', this.availableGroups);
       } catch (error) {
         if (error.response?.status === 401) {
           this.availableGroups = [];
         } else {
-          console.error('Error fetching available groups:', error);
         }
       } finally {
         this.loadingAvailableGroups = false;
@@ -996,7 +983,6 @@ export default {
           this.fetchAvailableGroups();
         }
       } catch (error) {
-        console.error('Error searching groups:', error);
         this.toast.error('Error searching groups. Please try again.');
       }
     },
@@ -1041,7 +1027,6 @@ export default {
           user => !this.selectedGroup.members.some(member => member.id === user.id)
         );
       } catch (error) {
-        console.error('Error searching users:', error);
       } finally {
         this.searchingUsers = false;
       }
@@ -1071,7 +1056,6 @@ export default {
         const response = await axios.get(`/groups/${groupId}/invitations`);
         this.groupInvitations = response.data;
       } catch (error) {
-        console.error('Error fetching group invitations:', error);
       }
     },
     async cancelInvitation(invitationId) {
@@ -1090,7 +1074,6 @@ export default {
         this.pendingInvitations = response.data;
       } catch (error) {
         if (error.response?.status !== 401) {
-          console.error('Error fetching invitations:', error);
         }
       } finally {
         this.loadingInvitations = false;
@@ -1150,22 +1133,18 @@ export default {
     },
     async updateGroup() {
       try {
-        console.log('Updating group:', this.editGroupForm);
         const response = await axios.put(`/groups/${this.editGroupForm.id}`, {
           name: this.editGroupForm.name,
           description: this.editGroupForm.description,
           is_public: this.editGroupForm.is_public,
         });
-        console.log('Update response:', response);
         this.toast.success('Group updated successfully!');
         this.closeEditGroupModal();
         // Refresh the groups list
         await this.fetchUserGroups();
         await this.fetchAvailableGroups();
       } catch (error) {
-        console.error('Error updating group:', error);
         if (error.response) {
-          console.error('Error response:', error.response.status, error.response.data);
           this.toast.error(error.response.data?.message || 'Failed to update group. Please try again.');
         } else {
           this.toast.error('Failed to update group. Please try again.');

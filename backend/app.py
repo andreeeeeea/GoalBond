@@ -1,7 +1,7 @@
 import datetime
 from dotenv import load_dotenv
 import os
-from flask import Flask, jsonify, request, render_template, redirect, url_for, flash, session
+from flask import Flask, jsonify, request, render_template, redirect, url_for, flash, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -73,21 +73,24 @@ def load_user(user_id):
 @app.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
-        response = jsonify({'status': 'OK'})
-        response.headers.add("Access-Control-Allow-Origin", request.headers.get("Origin", "*"))
-        response.headers.add('Access-Control-Allow-Headers', "Content-Type, Authorization")
-        response.headers.add('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS")
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response = make_response()
+        origin = request.headers.get("Origin")
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Max-Age"] = "3600"
         return response
 
 @app.after_request
 def after_request(response):
     origin = request.headers.get('Origin')
     if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
-        response.headers.add('Access-Control-Allow-Origin', origin)
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
 
