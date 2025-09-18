@@ -76,6 +76,20 @@ class Goal(db.Model):
             'progress': self.progress,  # Include progress percentage
         }
 
+class GroupInvitation(db.Model):
+    __tablename__ = 'group_invitations'
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # Relationships
+    group = db.relationship('Group', backref='invitations')
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_invitations')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_invitations')
+
 class Group(db.Model):
         __tablename__ = 'groups'
         id = db.Column(db.Integer, primary_key=True)

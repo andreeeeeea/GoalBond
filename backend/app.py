@@ -13,7 +13,7 @@ from flask_migrate import Migrate
 
 
 # Import models
-from models import db, User, Goal, Group
+from models import db, User, Goal, Group, GroupInvitation
 
 # Load environment variables
 load_dotenv()
@@ -194,7 +194,7 @@ def logout():
     return jsonify({'message': 'Logout successful!'}), 200
 
 # User Update
-@app.route('/update-user', methods=['PUT'])
+@app.route('/T-user', methods=['PUT'])
 @login_required
 def update_user():
     data = request.get_json()
@@ -235,6 +235,30 @@ def check_password():
         return jsonify({'message': 'Password is incorrect'}), 401
 
     return jsonify({'message': 'Password is correct'}), 200
+
+# Search for users
+@app.route('/users/search', methods=['GET'])
+@login_required
+def search_users():
+    query = request.args.get('query', '').strip()
+
+    if not query:
+        return jsonify([]), 200
+
+    # Search for users by username or nickname
+    users = User.query.filter(
+        (User.username.ilike(f'%{query}%')) |
+        (User.nickname.ilike(f'%{query}%'))
+    ).filter(User.id != current_user.id).all()  # Exclude current user
+
+    result = [{
+        'id': user.id,
+        'username': user.username,
+        'nickname': user.nickname,
+        'email': user.email
+    } for user in users]
+
+    return jsonify(result), 200
 
 ##### Goal Methods
 
@@ -316,6 +340,10 @@ def update_goal(goal_id):
             goal.season = data['season']  # Update the season if provided
         if 'episode' in data:
             goal.episode = data['episode']  # Update the episode if provided
+            
+    # Update deadline if provided
+    if 'deadline' in data:
+        goal.deadline = data['deadline']  # Update the deadline if provided
 
     db.session.commit()  # Save changes to the database
 
@@ -500,22 +528,38 @@ def leave_group(group_id):
     else:
         return jsonify({'message': 'You are not a member of this group.'}), 400
     
-# Delete a Group
-@app.route('/groups/<int:group_id>', methods=['DELETE'])
+# Delete or Edit a Group
+@app.route('/groups/<int:group_id>', methods=['DELETE', 'PUT'])
 @login_required
-def delete_group(group_id):
+def manage_group(group_id):
     group = Group.query.get_or_404(group_id)
-    
+
     if group.owner != current_user.id:
-        return jsonify({'message': 'You are not authorized to delete this group.'}), 403
-    
-    try:        
-        db.session.delete(group)
-        db.session.commit()
-        return jsonify({'message': 'Group deleted successfully!'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': 'Something went wrong. Please try again later.'}), 500   
+        return jsonify({'message': 'You are not authorized to manage this group.'}), 403
+
+    if request.method == 'DELETE':
+        # Delete the group
+        try:
+            db.session.delete(group)
+            db.session.commit()
+            return jsonify({'message': 'Group deleted successfully!'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Something went wrong. Please try again later.'}), 500
+
+    elif request.method == 'PUT':
+        # Edit the group
+        try:
+            data = request.get_json()
+            group.name = data.get('name', group.name)
+            group.description = data.get('description', group.description)
+            group.is_public = data.get('is_public', group.is_public)
+
+            db.session.commit()
+            return jsonify({'message': 'Group updated successfully!'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Something went wrong. Please try again later.'}), 500
     
 # Search for Groups
 @app.route('/groups/search', methods=['GET'])
@@ -541,6 +585,180 @@ def search_groups():
 
     return jsonify(result), 200
 
+##### Group Invitation Methods
+
+# Send group invitation
+@app.route('/groups/<int:group_id>/invite', methods=['POST'])
+@login_required
+def invite_to_group(group_id):
+    group = Group.query.get_or_404(group_id)
+
+    # Only group owner can send invitations
+    if group.owner != current_user.id:
+        return jsonify({'message': 'Only the group owner can send invitations.'}), 403
+
+    data = request.get_json()
+    recipient_id = data.get('recipient_id')
+
+    if not recipient_id:
+        return jsonify({'message': 'Recipient ID is required'}), 400
+
+    recipient = User.query.get(recipient_id)
+    if not recipient:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Check if user is already a member
+    if recipient in group.members:
+        return jsonify({'message': 'User is already a member of this group'}), 400
+
+    # Check if invitation already exists
+    existing_invitation = GroupInvitation.query.filter_by(
+        group_id=group_id,
+        recipient_id=recipient_id,
+        status='pending'
+    ).first()
+
+    if existing_invitation:
+        return jsonify({'message': 'Invitation already sent to this user'}), 400
+
+    # Create new invitation
+    invitation = GroupInvitation(
+        group_id=group_id,
+        sender_id=current_user.id,
+        recipient_id=recipient_id,
+        status='pending'
+    )
+
+    db.session.add(invitation)
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Invitation sent successfully!',
+        'invitation': {
+            'id': invitation.id,
+            'group_name': group.name,
+            'recipient_username': recipient.username
+        }
+    }), 201
+
+# Get user's received invitations
+@app.route('/invitations', methods=['GET'])
+@login_required
+def get_invitations():
+    invitations = GroupInvitation.query.filter_by(
+        recipient_id=current_user.id,
+        status='pending'
+    ).all()
+
+    result = []
+    for inv in invitations:
+        result.append({
+            'id': inv.id,
+            'group': {
+                'id': inv.group.id,
+                'name': inv.group.name,
+                'description': inv.group.description
+            },
+            'sender': {
+                'id': inv.sender.id,
+                'username': inv.sender.username
+            },
+            'created_at': inv.created_at.isoformat() if inv.created_at else None
+        })
+
+    return jsonify(result), 200
+
+# Accept invitation
+@app.route('/invitations/<int:invitation_id>/accept', methods=['POST'])
+@login_required
+def accept_invitation(invitation_id):
+    invitation = GroupInvitation.query.get_or_404(invitation_id)
+
+    # Check if the invitation is for the current user
+    if invitation.recipient_id != current_user.id:
+        return jsonify({'message': 'This invitation is not for you.'}), 403
+
+    if invitation.status != 'pending':
+        return jsonify({'message': 'This invitation has already been processed.'}), 400
+
+    # Add user to group
+    group = invitation.group
+    if current_user not in group.members:
+        group.members.append(current_user)
+
+    # Update invitation status
+    invitation.status = 'accepted'
+
+    db.session.commit()
+
+    return jsonify({'message': 'Invitation accepted! You have joined the group.'}), 200
+
+# Reject invitation
+@app.route('/invitations/<int:invitation_id>/reject', methods=['POST'])
+@login_required
+def reject_invitation(invitation_id):
+    invitation = GroupInvitation.query.get_or_404(invitation_id)
+
+    # Check if the invitation is for the current user
+    if invitation.recipient_id != current_user.id:
+        return jsonify({'message': 'This invitation is not for you.'}), 403
+
+    if invitation.status != 'pending':
+        return jsonify({'message': 'This invitation has already been processed.'}), 400
+
+    # Update invitation status
+    invitation.status = 'rejected'
+
+    db.session.commit()
+
+    return jsonify({'message': 'Invitation rejected.'}), 200
+
+# Get group's pending invitations (for group owner)
+@app.route('/groups/<int:group_id>/invitations', methods=['GET'])
+@login_required
+def get_group_invitations(group_id):
+    group = Group.query.get_or_404(group_id)
+
+    # Only group owner can view invitations
+    if group.owner != current_user.id:
+        return jsonify({'message': 'Only the group owner can view invitations.'}), 403
+
+    invitations = GroupInvitation.query.filter_by(
+        group_id=group_id,
+        status='pending'
+    ).all()
+
+    result = []
+    for inv in invitations:
+        result.append({
+            'id': inv.id,
+            'recipient': {
+                'id': inv.recipient.id,
+                'username': inv.recipient.username,
+                'nickname': inv.recipient.nickname
+            },
+            'created_at': inv.created_at.isoformat() if inv.created_at else None
+        })
+
+    return jsonify(result), 200
+
+# Cancel invitation (for group owner)
+@app.route('/invitations/<int:invitation_id>/cancel', methods=['DELETE'])
+@login_required
+def cancel_invitation(invitation_id):
+    invitation = GroupInvitation.query.get_or_404(invitation_id)
+
+    # Check if the user is the group owner
+    if invitation.group.owner != current_user.id:
+        return jsonify({'message': 'Only the group owner can cancel invitations.'}), 403
+
+    if invitation.status != 'pending':
+        return jsonify({'message': 'Only pending invitations can be cancelled.'}), 400
+
+    db.session.delete(invitation)
+    db.session.commit()
+
+    return jsonify({'message': 'Invitation cancelled.'}), 200
 
 ##### Others
 

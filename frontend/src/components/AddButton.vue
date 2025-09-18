@@ -102,13 +102,14 @@
           </div>
 
           <div class="mb-4">
-            <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
-            <label for="hasDeadline"> Add Deadline?</label>
-          </div>
-
-          <div v-if="hasDeadline" class="mb-4">
-            <label for="deadline">Deadline:</label>
-            <input type="date" id="deadline" v-model="deadline" required />
+            <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">Deadline:</label>
+            <input
+              type="datetime-local"
+              id="deadline"
+              v-model="deadline"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D76C82]"
+            />
+            <p class="text-xs text-gray-500 mt-1">Leave empty for no deadline</p>
           </div>
 
           <div class="flex justify-between space-x-2">
@@ -181,7 +182,6 @@ export default {
       showGroupForm: false,
       title: '',
       description: '',
-      hasDeadline: false,
       deadline: '',
       goalType: 'personal',
       selectedGroup: '',
@@ -210,7 +210,6 @@ export default {
   methods: {
     toggleButtons() {
       this.showForm = !this.showForm;
-      // Fetch user groups when opening the form
       if (this.showForm) {
         this.fetchUserGroups();
       }
@@ -243,8 +242,7 @@ export default {
       const goalData = {
         title: titleCapitalized,
         description: descriptionCapitalized,
-        hasDeadline: this.hasDeadline,
-        deadline: this.hasDeadline ? this.deadline : null,
+        deadline: this.deadline || null,
         is_group_goal: this.goalType === 'group',
         group_id: this.goalType === 'group' ? this.selectedGroup : null,
         category: this.category,
@@ -258,7 +256,6 @@ export default {
         this.showForm = false;
         this.toast.success('Goal added successfully.');
         this.$emit('goal-added', response.data);
-        // Emit event to refresh goals list
         eventBus.emit('goal-added', response.data);
       } catch (error) {
         console.error("Error adding goal:", error);
@@ -268,7 +265,6 @@ export default {
     clearForm() {
       this.title = '';
       this.description = '';
-      this.hasDeadline = false;
       this.deadline = '';
       this.selectedGroup = '';
       this.goalType = 'personal';
@@ -288,7 +284,6 @@ export default {
         this.userGroups = response.data.groups || [];
         console.log('User groups loaded:', this.userGroups);
         
-        // If user has no groups, show a message
         if (this.userGroups.length === 0) {
           console.log('User has no groups');
         }
@@ -319,7 +314,6 @@ export default {
         this.clearGroupForm();
         this.showGroupForm = false;
         await this.fetchUserGroups();
-        // Emit event to refresh groups list
         eventBus.emit('group-added');
       } catch (error) {
         console.error('Error creating group:', error);
@@ -329,7 +323,9 @@ export default {
   },
   async mounted() {
     this.toast = useToast();
-    await this.fetchUserGroups();
+    if (this.isAuthenticated) {
+      await this.fetchUserGroups();
+    }
   },
   watch: {
     goalType(newVal) {
@@ -337,6 +333,11 @@ export default {
     },
     selectedGroup(newVal) {
       console.log('Selected group changed to:', newVal);
+    },
+    isAuthenticated(newVal) {
+      if (newVal) {
+        this.fetchUserGroups();
+      }
     }
   },
   computed: {

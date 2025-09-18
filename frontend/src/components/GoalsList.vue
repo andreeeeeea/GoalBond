@@ -388,25 +388,37 @@
               </div>
             </div>
 
+            <!-- Deadline field -->
+            <div class="mb-4">
+              <label for="editDeadline" class="block text-sm font-medium text-gray-700 mb-1">Deadline:</label>
+              <input
+                type="datetime-local"
+                id="editDeadline"
+                v-model="editingGoal.deadline"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
+              />
+              <p class="text-xs text-gray-500 mt-1">Leave empty to remove deadline</p>
+            </div>
+
             <!-- Series-specific fields -->
             <div v-if="editingGoal.category === 'Series'" class="space-y-4">
               <div>
                 <label for="editSeason" class="block text-sm font-medium text-gray-700 mb-1">Season:</label>
-                <input 
-                  type="number" 
-                  id="editSeason" 
-                  v-model="editingGoal.season" 
-                  min="1" 
+                <input
+                  type="number"
+                  id="editSeason"
+                  v-model="editingGoal.season"
+                  min="1"
                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
                 />
               </div>
               <div>
                 <label for="editEpisode" class="block text-sm font-medium text-gray-700 mb-1">Episode:</label>
-                <input 
-                  type="number" 
-                  id="editEpisode" 
-                  v-model="editingGoal.episode" 
-                  min="1" 
+                <input
+                  type="number"
+                  id="editEpisode"
+                  v-model="editingGoal.episode"
+                  min="1"
                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B03052]"
                 />
               </div>
@@ -495,13 +507,14 @@
             </div>
 
             <div class="mb-4">
-              <input type="checkbox" id="hasDeadline" v-model="hasDeadline" />
-              <label for="hasDeadline">Add Deadline?</label>
-            </div>
-
-            <div v-if="hasDeadline" class="mb-4">
-              <label for="deadline">Deadline:</label>
-              <input type="date" id="deadline" v-model="deadline" required />
+              <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">Deadline:</label>
+              <input
+                type="datetime-local"
+                id="deadline"
+                v-model="deadline"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <p class="text-xs text-gray-500 mt-1">Leave empty for no deadline</p>
             </div>
 
             <div class="flex justify-between space-x-2">
@@ -555,7 +568,6 @@ export default {
       showCompletedGoals: false,
       title: '',
       description: '',
-      hasDeadline: false,
       deadline: '',
       goalType: 'personal',
       category: '',
@@ -655,7 +667,6 @@ export default {
       const newGoal = {
         title: goal.title,
         description: goal.description,
-        hasDeadline: goal.hasDeadline,
         deadline: goal.deadline,
         is_group_goal: goal.is_group_goal,
         group_id: goal.group_id,
@@ -704,14 +715,23 @@ export default {
     },
 
     openEditForm(goal) {
-      this.editingGoal = { 
+      // Format deadline for datetime-local input if it exists
+      let formattedDeadline = '';
+      if (goal.deadline) {
+        const date = new Date(goal.deadline);
+        // Format to YYYY-MM-DDTHH:mm for datetime-local input
+        formattedDeadline = date.toISOString().slice(0, 16);
+      }
+
+      this.editingGoal = {
         ...goal,
         progress: goal.progress !== undefined ? goal.progress : 0,
         season: goal.season || '',
-        episode: goal.episode || ''
+        episode: goal.episode || '',
+        deadline: formattedDeadline
       };
       console.log('Opening edit form for goal:', goal);
-      console.log('Editing goal progress:', this.editingGoal.progress);
+      console.log('Editing goal with deadline:', this.editingGoal.deadline);
       this.showEditForm = true;
     },
 
@@ -725,31 +745,38 @@ export default {
         const updateData = {
           progress: parseInt(this.editingGoal.progress)
         };
-        
+
+        // Add deadline if provided, or set to null to remove it
+        if (this.editingGoal.deadline) {
+          // Convert datetime-local format to ISO string
+          updateData.deadline = new Date(this.editingGoal.deadline).toISOString();
+        } else {
+          updateData.deadline = null;
+        }
+
         if (this.editingGoal.category === 'Series') {
           updateData.season = parseInt(this.editingGoal.season) || this.editingGoal.season;
           updateData.episode = parseInt(this.editingGoal.episode) || this.editingGoal.episode;
         }
-        
+
         console.log('Updating goal with data:', updateData);
-        
+
         await axios.put(`/goals/${this.editingGoal.id}`, updateData);
-        
-        // Update the goal in the existing array instead of fetching all goals
+
         const goalIndex = this.goals.findIndex(g => g.id === this.editingGoal.id);
         if (goalIndex !== -1) {
-          // Preserve the original goal's position by updating in place
           this.goals[goalIndex] = {
             ...this.goals[goalIndex],
             ...updateData,
-            progress: updateData.progress
+            progress: updateData.progress,
+            deadline: updateData.deadline
           };
         }
-        
+
         this.toast.success('Goal updated successfully!');
         this.closeEditForm();
       } catch (error) {
-        this.toast.error('Error updating goal: ' + error.response?.data?.message || error.message);
+        this.toast.error('Error updating goal: ' + (error.response?.data?.message || error.message));
         console.error('Error updating goal:', error);
       }
     },
@@ -774,8 +801,11 @@ export default {
         const response = await axios.get('/goals');
         this.goals = response.data;
       } catch (error) {
-        console.error('Error fetching goals:', error);
-        this.toast.error('Error fetching goals.');
+        if (error.response?.status !== 401) {
+          console.error('Error fetching goals:', error);
+          this.toast.error('Error fetching goals.');
+        }
+        this.goals = [];
       } finally {
         this.loadingGoals = false;
       }
@@ -786,15 +816,17 @@ export default {
         const response = await axios.get('/groups');
         this.groups = response.data;
       } catch (error) {
-        console.error('Error fetching groups:', error);
-        this.toast.error('Error fetching groups.');
+        if (error.response?.status !== 401) {
+          console.error('Error fetching groups:', error);
+          this.toast.error('Error fetching groups.');
+        }
+        this.groups = [];
       }
     },
 
     clearForm() {
       this.title = '';
       this.description = '';
-      this.hasDeadline = false;
       this.deadline = '';
       this.selectedGroup = '';
       this.goalType = 'personal';
@@ -809,20 +841,21 @@ export default {
       await this.fetchUserDetails();
       await this.fetchGoals();
       await this.fetchGroups();
-      
-      // Listen for goal-added event to refresh the list
+
       this.handleGoalAdded = () => {
         this.fetchGoals();
       };
       eventBus.on('goal-added', this.handleGoalAdded);
     } catch (error) {
-      this.toast.error('Error initializing goals view.');
-      console.error('Error during component mount:', error);
+      // Only show error if it's not an authentication issue
+      if (error.response?.status !== 401) {
+        this.toast.error('Error initializing goals view.');
+        console.error('Error during component mount:', error);
+      }
     }
   },
   
   unmounted() {
-    // Clean up event listener
     if (this.handleGoalAdded) {
       eventBus.off('goal-added', this.handleGoalAdded);
     }
