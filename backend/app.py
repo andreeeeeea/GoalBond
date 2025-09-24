@@ -785,14 +785,30 @@ def cancel_invitation(invitation_id):
 
 ##### Others
 
-@app.route('/forgot_password', methods=['POST'])
+@app.route('/forgot_password', methods=['POST', 'OPTIONS'])
 def forgot_password():
+    # Handle preflight request for CORS
+    if request.method == 'OPTIONS':
+        response = make_response()
+        origin = request.headers.get('Origin')
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
     try:
         data = request.get_json()  # Get the request data from Vue.js
 
         email = data.get('email')
         if not email:
-            return jsonify({'success': False, 'message': 'Email is required'}), 400
+            response = jsonify({'success': False, 'message': 'Email is required'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response, 400
 
         user = User.query.filter_by(email=email).first()
 
@@ -861,40 +877,91 @@ The GoalBond Team
             '''
             mail.send(msg)
 
-            return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
+            response = jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response
 
         else:
-            return jsonify({'success': False, 'message': 'No account found with that email address.'})
+            response = jsonify({'success': False, 'message': 'No account found with that email address.'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response
 
     except Exception as e:
         app.logger.error(f"Error in forgot_password route: {str(e)}")
-        return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
+        response = jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'})
+        origin = request.headers.get('Origin')
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response, 500
        
-@app.route('/reset_password/<token>', methods=['POST'])
+@app.route('/reset_password/<token>', methods=['POST', 'OPTIONS'])
 def reset_password(token):
+    # Handle preflight request for CORS
+    if request.method == 'OPTIONS':
+        response = make_response()
+        origin = request.headers.get('Origin')
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
     try:
         try:
             email = serializer.loads(token, salt='reset-password', max_age=3600)
         except (SignatureExpired, BadSignature) as e:
-            return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 400
+            response = jsonify({'success': False, 'message': 'Invalid or expired token.'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response, 400
 
         user = User.query.filter_by(email=email).first()
 
         if not user:
-            return jsonify({'success': False, 'message': 'User not found for the given email.'}), 400
+            response = jsonify({'success': False, 'message': 'User not found for the given email.'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response, 400
 
         new_password = request.json.get('password')
         if not new_password:
-            return jsonify({'success': False, 'message': 'New password is required.'}), 400
+            response = jsonify({'success': False, 'message': 'New password is required.'})
+            origin = request.headers.get('Origin')
+            if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return response, 400
 
         user.set_password(new_password)
         db.session.commit()
 
-        return jsonify({'success': True, 'message': 'Your password has been updated!'}), 200
+        response = jsonify({'success': True, 'message': 'Your password has been updated!'})
+        origin = request.headers.get('Origin')
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response, 200
 
     except Exception as e:
         app.logger.error(f"Error in reset_password: {str(e)}")
-        return jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'}), 500
+        response = jsonify({'success': False, 'message': 'Something went wrong. Please try again later.'})
+        origin = request.headers.get('Origin')
+        if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response, 500
 
     
     
