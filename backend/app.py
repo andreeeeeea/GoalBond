@@ -93,6 +93,24 @@ def after_request(response):
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
+@app.errorhandler(500)
+def handle_500_error(e):
+    origin = request.headers.get('Origin')
+    response = jsonify({'success': False, 'message': 'Internal server error'})
+    if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response, 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    origin = request.headers.get('Origin')
+    response = jsonify({'success': False, 'message': 'Something went wrong'})
+    if origin in ["https://goalbond.netlify.app", "http://localhost:8080", "http://127.0.0.1:8080"]:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response, 500
+
 
 ##### User methods
 
@@ -785,10 +803,22 @@ def cancel_invitation(invitation_id):
 
 ##### Others
 
-@app.route('/forgot_password', methods=['POST'])
+@app.route('/forgot_password', methods=['POST', 'OPTIONS'])
 def forgot_password():
+    # Handle OPTIONS request for CORS preflight
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
     try:
-        data = request.get_json()  # Get the request data from Vue.js
+        data = request.get_json(force=True)  # Force parsing even if content-type is wrong
+
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid request data'}), 400
 
         email = data.get('email')
         if not email:
@@ -799,15 +829,15 @@ def forgot_password():
         if user:
             # Generate password reset token
             token = serializer.dumps(email, salt='reset-password')
-            
+
             # Create frontend URL for password reset
             # Check multiple headers to determine the frontend URL
             origin = request.headers.get('Origin')
             referer = request.headers.get('Referer')
-            
+
             # Default to production URL
             frontend_url = "https://goalbond.netlify.app"
-            
+
             # Check if request is from localhost
             if origin and ('localhost' in origin or '127.0.0.1' in origin):
                 frontend_url = origin
@@ -819,9 +849,9 @@ def forgot_password():
             elif request.host and ('localhost' in request.host or '127.0.0.1' in request.host):
                 # If backend is running locally, assume frontend is too
                 frontend_url = "http://localhost:8080"
-            
+
             reset_link = f"{frontend_url}/reset_password?token={token}"
-            
+
             # Log for debugging
             app.logger.info(f"Password reset requested from: Origin={origin}, Referer={referer}, Host={request.host}")
             app.logger.info(f"Generated reset link: {reset_link}")
