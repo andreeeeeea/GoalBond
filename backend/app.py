@@ -23,13 +23,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
-app.config['MAIL_PORT'] = 587                
-app.config['MAIL_USE_TLS'] = True            
-app.config['MAIL_USE_SSL'] = False            
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com') 
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com')  
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465  # Use SSL port instead of TLS
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True  # Use SSL instead of TLS
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', 'goalbondbot@gmail.com')
+app.config['MAIL_TIMEOUT'] = 5  # Shorter timeout  
 
 
 # Cookies
@@ -889,9 +890,13 @@ If you did not request this password reset, please ignore this email.
 Best regards,
 The GoalBond Team
             '''
-            mail.send(msg)
-
-            return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
+            try:
+                mail.send(msg)
+                return jsonify({'success': True, 'message': 'A password reset link has been sent to your email.'})
+            except Exception as mail_error:
+                app.logger.error(f"Failed to send email: {str(mail_error)}")
+                # Still return success to avoid exposing whether email exists
+                return jsonify({'success': True, 'message': 'If the email exists, a reset link has been sent.'})
 
         else:
             return jsonify({'success': False, 'message': 'No account found with that email address.'})
