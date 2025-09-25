@@ -16,7 +16,18 @@ const app = createApp(App);
 app.config.globalProperties.$axios = axios;
 
 const options = {
-  // You can set your default options here
+  position: "bottom-left",
+  timeout: 3000,
+  closeOnClick: true,
+  pauseOnFocusLoss: true,
+  pauseOnHover: true,
+  draggable: true,
+  draggablePercent: 0.6,
+  showCloseButtonOnHover: false,
+  hideProgressBar: false,
+  closeButton: "button",
+  icon: true,
+  rtl: false
 };
 
 app.use(Toast, options);

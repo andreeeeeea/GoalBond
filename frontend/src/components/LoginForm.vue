@@ -39,8 +39,8 @@
       async handleLogin() {
         try {
           await this.login({ username: this.username, password: this.password });
-          this.$router.push('/'); 
           this.toast.success('Login successful');
+          this.$router.push('/');
         } catch (error) {
           this.toast.error('Invalid username or password');
         }
