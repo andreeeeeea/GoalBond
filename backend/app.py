@@ -830,31 +830,9 @@ def forgot_password():
             # Generate password reset token
             token = serializer.dumps(email, salt='reset-password')
 
-            # Create frontend URL for password reset
-            # Check multiple headers to determine the frontend URL
-            origin = request.headers.get('Origin')
-            referer = request.headers.get('Referer')
-
-            # Default to production URL
+            # Always use production URL for password reset links
             frontend_url = "https://goalbond.netlify.app"
-
-            # Check if request is from localhost
-            if origin and ('localhost' in origin or '127.0.0.1' in origin):
-                frontend_url = origin
-            elif referer and ('localhost' in referer or '127.0.0.1' in referer):
-                # Extract base URL from referer
-                from urllib.parse import urlparse
-                parsed = urlparse(referer)
-                frontend_url = f"{parsed.scheme}://{parsed.netloc}"
-            elif request.host and ('localhost' in request.host or '127.0.0.1' in request.host):
-                # If backend is running locally, assume frontend is too
-                frontend_url = "http://localhost:8080"
-
             reset_link = f"{frontend_url}/reset_password?token={token}"
-
-            # Log for debugging
-            app.logger.info(f"Password reset requested from: Origin={origin}, Referer={referer}, Host={request.host}")
-            app.logger.info(f"Generated reset link: {reset_link}")
 
             # Send reset email
             msg = Message('Password Reset Request', recipients=[email])
